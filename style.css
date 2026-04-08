@@ -1,43 +1,43 @@
 /* =============================================================================
-   QUANTUM-NOVA v5 — style.css
-   Feuille de style principale + Moteur de thèmes
-   =============================================================================
-
-   TABLE DES MATIÈRES :
-   ─────────────────────────────────────────────────────────────────────────────
-   [1]   VARIABLES DE THÈME (4 thèmes via data-theme sur <html>)
-   [2]   RESET & BASE GLOBALE
-   [3]   LAYOUT PRINCIPAL   (workstation vertical responsive 320–480px)
-   [4]   EN-TÊTE DE MARQUE  (brand-header, masqué en mode widget)
-   [5]   MODULE ÉCRAN       (screen-module, screen-header, canvas, console)
-   [5b]  MODULE HISTORIQUE  (log-module repliable, posé SOUS le canvas,
-                              remplace l'ancienne approche log-in-overlay
-                              qui masquait le graphe)
-   [5c]  POIGNÉE DE RESIZE  (resize-handle entre écran et clavier)
-   [6]   LÉGENDE DES FONCTIONS
-   [7]   MODULE CLAVIER     (keyboard-module, system-keys 3 col, main-grid 5 col)
-   [8]   TYPES DE TOUCHES   (key-sys, key-sys-select, key-sci, key-num,
-                              key-op, key-mem, key-act, key-clear)
-   [9]   MODE WIDGET        (body.widget-mode, masque la brand-header
-                              pour maximiser l'espace en popup détaché)
-   [10]  MODAL DOCUMENTATION (modal-overlay, modal-content, onglets)
-   [11]  CATALOGUE VISUEL   (catalog-grid, catalog-item)
-   [12]  ANIMATIONS & TRANSITIONS
-   [13]  RESPONSIVE         (ajustements < 600px)
-
-   ─── Évolutions majeures depuis v4.0 ─────────────────────────────────────────
-   • Layout 2-colonnes 1050px → layout vertical 320-480px (intégration sidebar)
-   • Log overlay sur canvas   → log-module repliable sous le canvas
-   • Bouton 🎨 THÈME cyclique → <select> dans la barre système
-   • Clavier AZERTY BE/FR     → interception Unicode ² ³ × ÷ π √ ∛ ≤ ≥ ≠
-   • Hauteur écran fixe 640px → variable --screen-height + poignée de resize
-   • Thème défaut = cyber     → thème défaut = light (lisibilité sidebar)
-   • Pas de commandes texte   → aide / theme / kbd / reset / popup etc.
-   ============================================================================= */
+ *  QUANTUM-NOVA v5 — style.css
+ *  Feuille de style principale + Moteur de thèmes
+ *  =============================================================================
+ *
+ *  TABLE DES MATIÈRES :
+ *  ─────────────────────────────────────────────────────────────────────────────
+ *  [1]   VARIABLES DE THÈME (4 thèmes via data-theme sur <html>)
+ *  [2]   RESET & BASE GLOBALE
+ *  [3]   LAYOUT PRINCIPAL   (workstation vertical responsive 320–480px)
+ *  [4]   EN-TÊTE DE MARQUE  (brand-header, masqué en mode widget)
+ *  [5]   MODULE ÉCRAN       (screen-module, screen-header, canvas, console)
+ *  [5b]  MODULE HISTORIQUE  (log-module repliable, posé SOUS le canvas,
+ *                             remplace l'ancienne approche log-in-overlay
+ *                             qui masquait le graphe)
+ *  [5c]  POIGNÉE DE RESIZE  (resize-handle entre écran et clavier)
+ *  [6]   LÉGENDE DES FONCTIONS
+ *  [7]   MODULE CLAVIER     (keyboard-module, system-keys 3 col, main-grid 5 col)
+ *  [8]   TYPES DE TOUCHES   (key-sys, key-sys-select, key-sci, key-num,
+ *                             key-op, key-mem, key-act, key-clear)
+ *  [9]   MODE WIDGET        (body.widget-mode, masque la brand-header
+ *                             pour maximiser l'espace en popup détaché)
+ *  [10]  MODAL DOCUMENTATION (modal-overlay, modal-content, onglets)
+ *  [11]  CATALOGUE VISUEL   (catalog-grid, catalog-item)
+ *  [12]  ANIMATIONS & TRANSITIONS
+ *  [13]  RESPONSIVE         (ajustements < 600px)
+ *
+ *  ─── Évolutions majeures depuis v4.0 ─────────────────────────────────────────
+ *  • Layout 2-colonnes 1050px → layout vertical 320-480px (intégration sidebar)
+ *  • Log overlay sur canvas   → log-module repliable sous le canvas
+ *  • Bouton 🎨 THÈME cyclique → <select> dans la barre système
+ *  • Clavier AZERTY BE/FR     → interception Unicode ² ³ × ÷ π √ ∛ ≤ ≥ ≠
+ *  • Hauteur écran fixe 640px → variable --screen-height + poignée de resize
+ *  • Thème défaut = cyber     → thème défaut = light (lisibilité sidebar)
+ *  • Pas de commandes texte   → aide / theme / kbd / reset / popup etc.
+ *  ============================================================================= */
 
 /* =============================================================================
-   [1] VARIABLES DE THÈME
-   ============================================================================= */
+ *  [1] VARIABLES DE THÈME
+ *  ============================================================================= */
 :root,
 html[data-theme="cyber"] {
     --desk-bg:       #0a0c14;
@@ -196,8 +196,8 @@ html[data-theme="plasma"] {
 }
 
 /* =============================================================================
-   [2] RESET & BASE GLOBALE
-   ============================================================================= */
+ *  [2] RESET & BASE GLOBALE
+ *  ============================================================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -210,23 +210,23 @@ body {
 }
 
 /* =============================================================================
-   [3] LAYOUT PRINCIPAL — Mode vertical responsive (v4.1+)
-   =============================================================================
-   La calculatrice est organisée en une SEULE colonne empilée verticalement,
-   façon véritable calculatrice graphique (TI-84, Casio fx-CG). Elle est
-   conçue pour être intégrable dans une sidebar de page web, et s'adapte
-   automatiquement entre 320px (sidebar compacte) et 480px (confort).
-
-   Ordre des blocs (top → bottom) :
-     1. brand-header     (marque + tagline + version)
-     2. screen-module    (canvas + console overlay + légende)
-     3. resize-handle    (poignée pour ajuster la hauteur du screen-module)
-     4. keyboard-module  (system-keys + main-grid)
-
-   La poignée de redimensionnement permet à l'utilisateur d'allouer plus
-   ou moins d'espace au graphe selon ses besoins. La hauteur choisie est
-   persistée dans localStorage (clé qn:screenHeight).
-   ============================================================================= */
+ *  [3] LAYOUT PRINCIPAL — Mode vertical responsive (v4.1+)
+ *  =============================================================================
+ *  La calculatrice est organisée en une SEULE colonne empilée verticalement,
+ *  façon véritable calculatrice graphique (TI-84, Casio fx-CG). Elle est
+ *  conçue pour être intégrable dans une sidebar de page web, et s'adapte
+ *  automatiquement entre 320px (sidebar compacte) et 480px (confort).
+ *
+ *  Ordre des blocs (top → bottom) :
+ *    1. brand-header     (marque + tagline + version)
+ *    2. screen-module    (canvas + console overlay + légende)
+ *    3. resize-handle    (poignée pour ajuster la hauteur du screen-module)
+ *    4. keyboard-module  (system-keys + main-grid)
+ *
+ *  La poignée de redimensionnement permet à l'utilisateur d'allouer plus
+ *  ou moins d'espace au graphe selon ses besoins. La hauteur choisie est
+ *  persistée dans localStorage (clé qn:screenHeight).
+ *  ============================================================================= */
 .workstation {
     background: var(--calc-chassis);
     width: 100%;
@@ -241,13 +241,13 @@ body {
     border: 1px solid var(--screen-border);
     transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
     /* La hauteur n'est PAS fixe : elle est déterminée par la somme des blocs
-       empilés, ce qui permet l'intégration fluide en sidebar de n'importe
-       quelle hauteur. */
+     *      empilés, ce qui permet l'intégration fluide en sidebar de n'importe
+     *      quelle hauteur. */
 }
 
 /* =============================================================================
-   [4] EN-TÊTE DE MARQUE — Adapté au layout vertical étroit
-   ============================================================================= */
+ *  [4] EN-TÊTE DE MARQUE — Adapté au layout vertical étroit
+ *  ============================================================================= */
 .brand-header {
     display: flex;
     justify-content: space-between;
@@ -271,12 +271,12 @@ body {
 }
 
 /* =============================================================================
-   [5] MODULE ÉCRAN
-   =============================================================================
-   height est définie en inline style ou via la variable CSS --screen-height
-   (modifiable à chaud par la poignée de redimensionnement). Valeur par défaut
-   adaptée au layout vertical compact.
-   ============================================================================= */
+ *  [5] MODULE ÉCRAN
+ *  =============================================================================
+ *  height est définie en inline style ou via la variable CSS --screen-height
+ *  (modifiable à chaud par la poignée de redimensionnement). Valeur par défaut
+ *  adaptée au layout vertical compact.
+ *  ============================================================================= */
 .screen-module {
     background: var(--screen-bg);
     border: 1.5px solid var(--screen-border);
@@ -340,9 +340,9 @@ body {
 canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
 
 /* ── Console overlay : NE CONTIENT PLUS QUE l'input de saisie ─────────────
-   Le history-log a été extrait dans .log-module pour libérer le graphe.
-   On garde un léger gradient pour que la ligne de saisie reste lisible
-   même quand une courbe passe juste derrière. */
+ *  Le history-log a été extrait dans .log-module pour libérer le graphe.
+ *  On garde un léger gradient pour que la ligne de saisie reste lisible
+ *  même quand une courbe passe juste derrière. */
 .console-overlay {
     position: absolute; bottom: 0; left: 0; right: 0;
     background: linear-gradient(to top, var(--screen-bg) 60%, color-mix(in srgb, var(--screen-bg) 90%, transparent) 85%, transparent);
@@ -357,14 +357,14 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display
 }
 
 /* =============================================================================
-   [5bis] MODULE HISTORIQUE / LOG REPLIABLE (v4.1+)
-   =============================================================================
-   Bloc indépendant, placé entre .screen-module et .resize-handle dans la
-   workstation. Replié par défaut pour maximiser la visibilité du graphe.
-   Le header est cliquable pour basculer l'état. La hauteur dépliée est
-   limitée à 180px avec scroll interne pour ne pas pousser le clavier hors
-   de l'écran. État persisté via localStorage["qn:logCollapsed"].
-   ============================================================================= */
+ *  [5bis] MODULE HISTORIQUE / LOG REPLIABLE (v4.1+)
+ *  =============================================================================
+ *  Bloc indépendant, placé entre .screen-module et .resize-handle dans la
+ *  workstation. Replié par défaut pour maximiser la visibilité du graphe.
+ *  Le header est cliquable pour basculer l'état. La hauteur dépliée est
+ *  limitée à 180px avec scroll interne pour ne pas pousser le clavier hors
+ *  de l'écran. État persisté via localStorage["qn:logCollapsed"].
+ *  ============================================================================= */
 .log-module {
     background: var(--legend-bg);
     border: 1px solid var(--screen-border);
@@ -372,7 +372,22 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display
     overflow: hidden;
     transition: max-height 0.25s ease;
 }
-.log-module.collapsed .history-log { display: none; }
+/* FIX UX v5.2 : en mode replié, on n'efface plus complètement l'historique
+ *  (display: none) — sinon l'utilisateur tape une commande, voit le champ se
+ *  vider et croit que rien ne s'est passé. À la place, on laisse un aperçu
+ *  (~2 dernières lignes) accessible sans dérouler. Le scroll interne reste
+ *  possible si on veut feuilleter les entrées précédentes sans déplier. */
+.log-module.collapsed .history-log {
+    max-height: 3.2em;     /* ~2 lignes à 1.5 line-height + padding */
+    padding: 6px 14px;
+    overflow-y: auto;
+}
+/* Ancrage en bas : on veut TOUJOURS voir la dernière entrée, pas la première.
+ *  `flex-direction: column-reverse` + insertion au début côté JS = naturel,
+ *  mais comme l'insertion est en append côté ui.js, on triche avec un
+ *  scroll-snap-bas via `display: flex; flex-direction: column-reverse` qui
+ *  collerait au bas. Plus simple ici : on laisse la version JS gérer le
+ *  scrollTop (voir patch ui.js). */
 
 .log-header {
     width: 100%;
@@ -436,17 +451,17 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display
 .log-result { font-size: 0.82rem; font-weight: 600; padding-left: 12px; }
 
 /* ── Mode widget : appliqué quand l'app est ouverte via openAsPopup() ──────
-   Détecté côté JS via URLSearchParams et la classe body.widget-mode est
-   ajoutée. On masque alors les éléments superflus pour maximiser l'espace
-   alloué à la calculatrice elle-même. */
+ *  Détecté côté JS via URLSearchParams et la classe body.widget-mode est
+ *  ajoutée. On masque alors les éléments superflus pour maximiser l'espace
+ *  alloué à la calculatrice elle-même. */
 /* ── Mode widget : appliqué par défaut depuis la v5 ───────────────────────
-   Depuis la v5, body.widget-mode est appliqué DIRECTEMENT dans index.html
-   (class="widget-mode" sur <body>) plutôt que détecté via URLSearchParams.
-   C'est le layout standard de la calculatrice : compact, intégrable en
-   sidebar, avec le brand-header qui reste visible pour garder l'identité.
-   Les scrollbars verticaux sont activés pour que l'utilisateur puisse
-   toujours atteindre l'intégralité de l'interface même sur des écrans
-   plus petits que la hauteur totale de la calculatrice. */
+ *  Depuis la v5, body.widget-mode est appliqué DIRECTEMENT dans index.html
+ *  (class="widget-mode" sur <body>) plutôt que détecté via URLSearchParams.
+ *  C'est le layout standard de la calculatrice : compact, intégrable en
+ *  sidebar, avec le brand-header qui reste visible pour garder l'identité.
+ *  Les scrollbars verticaux sont activés pour que l'utilisateur puisse
+ *  toujours atteindre l'intégralité de l'interface même sur des écrans
+ *  plus petits que la hauteur totale de la calculatrice. */
 body.widget-mode {
     padding: 4px;
     min-height: 100vh;
@@ -456,16 +471,14 @@ body.widget-mode {
 body.widget-mode .workstation {
     padding: 10px;
     max-width: 100%;
-    min-width: 320px;
+    min-width: 0;
     gap: 8px;
-    border-radius: 0px;
-    border: none;
-    box-shadow: none;
+    border-radius: 12px;
 }
 /* brand-header RESTE VISIBLE en v5 : on conserve l'identité de marque
-   même en mode compact. La règle de masquage de la v4.1 est supprimée.
-   On réduit juste légèrement les tailles typographiques pour rester
-   harmonieux avec le layout compact. */
+ *  même en mode compact. La règle de masquage de la v4.1 est supprimée.
+ *  On réduit juste légèrement les tailles typographiques pour rester
+ *  harmonieux avec le layout compact. */
 body.widget-mode .brand-header {
     padding-bottom: 6px;
     margin-bottom: 0;
@@ -480,8 +493,8 @@ body.widget-mode .brand-tagline {
 }
 
 /* =============================================================================
-   [6] LÉGENDE DES FONCTIONS
-   ============================================================================= */
+ *  [6] LÉGENDE DES FONCTIONS
+ *  ============================================================================= */
 .function-legend {
     background: var(--legend-bg); border-top: 1px solid var(--screen-border);
     padding: 8px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 40px;
@@ -498,8 +511,8 @@ body.widget-mode .brand-tagline {
 .legend-remove:hover { opacity: 1; }
 
 /* =============================================================================
-   [7] MODULE CLAVIER — Adapté au layout vertical compact
-   ============================================================================= */
+ *  [7] MODULE CLAVIER — Adapté au layout vertical compact
+ *  ============================================================================= */
 .keyboard-module { display: flex; flex-direction: column; gap: 8px; }
 .system-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
 .main-grid   { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; flex-grow: 1; }
@@ -523,11 +536,11 @@ button.key:active { transform: scale(0.90); filter: brightness(0.85); }
 }
 
 /* ── Sélecteur <select> stylé comme une touche système ────────────────────
-   Le <select> natif est notoirement difficile à styliser uniformément selon
-   les navigateurs. On applique les mêmes couleurs/bordures/typo que .key-sys,
-   puis on masque la flèche native via appearance: none, et on la remplace
-   par un glyphe ▾ injecté via background-image pour rester cohérent avec
-   le look "touche de calculatrice". */
+ *  Le <select> natif est notoirement difficile à styliser uniformément selon
+ *  les navigateurs. On applique les mêmes couleurs/bordures/typo que .key-sys,
+ *  puis on masque la flèche native via appearance: none, et on la remplace
+ *  par un glyphe ▾ injecté via background-image pour rester cohérent avec
+ *  le look "touche de calculatrice". */
 .key-sys-select {
     background: var(--key-sys-bg);
     color: var(--key-sys-text);
@@ -543,7 +556,7 @@ button.key:active { transform: scale(0.90); filter: brightness(0.85); }
     -webkit-appearance: none;
     -moz-appearance: none;
     background-image: linear-gradient(45deg, transparent 50%, var(--key-sys-text) 50%),
-                      linear-gradient(135deg, var(--key-sys-text) 50%, transparent 50%);
+    linear-gradient(135deg, var(--key-sys-text) 50%, transparent 50%);
     background-position: calc(100% - 10px) 50%, calc(100% - 6px) 50%;
     background-size: 4px 4px, 4px 4px;
     background-repeat: no-repeat;
@@ -573,8 +586,8 @@ button.key:active { transform: scale(0.90); filter: brightness(0.85); }
 .col-3 { grid-column: span 3; }
 
 /* =============================================================================
-   [10] MODAL DOCUMENTATION
-   ============================================================================= */
+ *  [10] MODAL DOCUMENTATION
+ *  ============================================================================= */
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
     display: none; justify-content: center; align-items: flex-start; padding: 30px 20px;
@@ -611,8 +624,8 @@ kbd { background: var(--key-sys-bg); border: 1px solid var(--screen-border); pad
 .tab-panel.active { display: block; animation: fadeInUp 0.2s ease-out; }
 
 /* =============================================================================
-   [11] CATALOGUE VISUEL
-   ============================================================================= */
+ *  [11] CATALOGUE VISUEL
+ *  ============================================================================= */
 .catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
 .catalog-category { background: var(--key-num-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--screen-border); }
 .catalog-category h3 { color: var(--text-neon); border-bottom: 1px solid var(--text-dim); padding-bottom: 10px; margin-top: 0;}
@@ -626,8 +639,8 @@ kbd { background: var(--key-sys-bg); border: 1px solid var(--screen-border); pad
 .cat-code { font-family: monospace; color: var(--text-success); font-size: 0.85rem; }
 
 /* =============================================================================
-   [12] ANIMATIONS
-   ============================================================================= */
+ *  [12] ANIMATIONS
+ *  ============================================================================= */
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
@@ -636,13 +649,13 @@ canvas, button.key { transition: none; }
 button.key:active { transition: transform 0.08s, filter 0.08s; }
 
 /* =============================================================================
-   [13] RESPONSIVE
-   =============================================================================
-   Le layout est maintenant vertical par défaut et s'adapte entre 320 et
-   480px via .workstation {min-width:320px; max-width:480px}. Les règles
-   ci-dessous ne font qu'ajuster le body et quelques détails secondaires
-   pour les très petits écrans mobiles.
-   ============================================================================= */
+ *  [13] RESPONSIVE
+ *  =============================================================================
+ *  Le layout est maintenant vertical par défaut et s'adapte entre 320 et
+ *  480px via .workstation {min-width:320px; max-width:480px}. Les règles
+ *  ci-dessous ne font qu'ajuster le body et quelques détails secondaires
+ *  pour les très petits écrans mobiles.
+ *  ============================================================================= */
 @media (max-width: 600px) {
     body { padding: 8px; align-items: stretch; }
     .workstation { min-width: 0; padding: 14px; }

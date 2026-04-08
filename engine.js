@@ -607,6 +607,89 @@ const META_COMMANDS = [
         desc:  'Retire l\'ombrage d\'intégrale d\'une fonction'
     },
     {
+        // limit <fn> <a> [side] — calcule lim fn(x) quand x → a
+        // Formes acceptées :
+        //   limit f 0            → bilatérale en 0
+        //   limit(f, 0)          → idem
+        //   limit f, 2, left     → unilatérale gauche
+        //   limit f inf          → limite à +∞
+        //   limit f -inf         → limite à -∞
+        // a peut être un nombre décimal OU "inf"/"+inf"/"-inf"/"infinity"
+        pattern: /^limit\s*\(?\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*[,\s]\s*(-?(?:inf(?:inity)?|[0-9.eE+-]+))\s*(?:[,\s]\s*(left|right|both|g|d))?\s*\)?$/i,
+        handler: (m) => {
+            const nom     = m[1];
+            const aRaw    = m[2].toLowerCase();
+            const sideRaw = (m[3] || 'both').toLowerCase();
+
+            // Parsing de a
+            let a;
+            if (aRaw === 'inf' || aRaw === '+inf' || aRaw === 'infinity' || aRaw === '+infinity') {
+                a = +Infinity;
+            } else if (aRaw === '-inf' || aRaw === '-infinity') {
+                a = -Infinity;
+            } else {
+                a = parseFloat(aRaw);
+                if (!isFinite(a)) return `⚠ Point cible invalide : "${aRaw}"`;
+            }
+
+            // Parsing du côté (avec alias g/d pour gauche/droite)
+            let side = 'both';
+            if (sideRaw === 'left' || sideRaw === 'g') side = 'left';
+            else if (sideRaw === 'right' || sideRaw === 'd') side = 'right';
+
+            // On ne peut pas demander un "both" à ±∞ (un seul côté a du sens)
+            if (!isFinite(a) && side === 'both') side = a > 0 ? 'left' : 'right';
+
+            const fn = fonctionsAffichees.find(f => f.nom === nom);
+            if (!fn) return `⚠ Fonction "${nom}" introuvable — définissez-la d'abord`;
+            if (fn.implicit) return `⚠ "${nom}" est implicite — limit ne s'applique qu'aux fonctions y=f(x)`;
+
+            const fEval  = (xx) => fn.ast.evaluate(buildScope(xx));
+            const result = computeLimit(fEval, a, side);
+
+            // Log avec flèche vers le bon côté
+            const arrow = !isFinite(a)
+                ? (a > 0 ? 'x→+∞' : 'x→-∞')
+                : (side === 'left'  ? `x→${a}⁻`
+                :  side === 'right' ? `x→${a}⁺`
+                :                     `x→${a}`);
+            ajouterLog(
+                `lim ${nom}(x) ${arrow}`,
+                `= ${formatLimitResult(result)}`,
+                fn.cssColor
+            );
+
+            // Pose aussi un marqueur visuel (seulement pour a fini — une
+            // asymptote horizontale sur le graphe pour une limite à ±∞
+            // demanderait une autre structure de rendu).
+            if (isFinite(a)) {
+                limMarkers.push({
+                    x: a,
+                    fnName: fn.nom,
+                    cssColor: fn.cssColor,
+                    result: result
+                });
+                dessiner();
+            }
+            return null; // on a déjà loggué manuellement
+        },
+        usage: 'limit <fn> <a> [left|right]',
+        desc:  'Calcule lim fn(x) quand x tend vers a (nombre ou ±inf)'
+    },
+    {
+        // limit clear / limit off — efface tous les marqueurs de limites
+        pattern: /^limit\s+(clear|off|reset)$/i,
+        handler: () => {
+            if (typeof effacerLimites === 'function') {
+                effacerLimites();
+                return null;
+            }
+            return '⚠ Module limites indisponible';
+        },
+        usage: 'limit clear',
+        desc:  'Efface tous les marqueurs de limites du graphe'
+    },
+    {
         // analyse / racines — active l'analyseur et lance un recalcul
         pattern: /^(analyse|analyze|racines|roots)$/i,
         handler: () => {
@@ -965,6 +1048,7 @@ function purgerMemoire() {
     historyLog.innerHTML = '';
     historyIndex = -1;
     cibleExistante = false;
+    limMarkers = [];
     ajouterLog('⚡ RAM PURGÉE', 'Espace de travail réinitialisé.', 'var(--text-error)');
     updateLegende(); resetVue();
 }
@@ -972,6 +1056,7 @@ function purgerMemoire() {
 function effacerGraphe() {
     fonctionsAffichees = [];
     cibleExistante = false;
+    limMarkers = [];
     ajouterLog('🗑️ Graphe effacé', 'Variables conservées en mémoire.', 'var(--text-warn)');
     updateLegende(); dessiner();
 }
@@ -1338,6 +1423,10 @@ function dessiner() {
     if (typeof drawAnalyseMarkers === 'function') {
         drawAnalyseMarkers(W, H, xRange, yRange);
     }
+    // Marqueurs de limites (v5.3) — dessinés par-dessus tout
+    if (typeof drawLimMarkers === 'function') {
+        drawLimMarkers(W, H, xRange, yRange);
+    }
 }
 
 // =============================================================================
@@ -1616,6 +1705,15 @@ function setupMouseEvents() {
             const px = e.clientX - rect.left;
             const py = e.clientY - rect.top;
 
+            // Priorité 0 : mode LIM actif → poser une limite au x cliqué
+            // et court-circuiter toute la chaîne de capture cX/cY habituelle.
+            if (limModeEnabled) {
+                const xClic = view.xMin + (px / W) * (view.xMax - view.xMin);
+                poserLimiteAuClic(xClic);
+                inputScreen.focus();
+                return;
+            }
+
             // Priorité 1 : point remarquable de l'analyseur (racine/intersection).
             // Si l'utilisateur clique près d'un des cercles lumineux, on capture
             // les coordonnées EXACTES du point remarquable, pas celles du curseur.
@@ -1801,6 +1899,11 @@ function setupKeyboardEvents() {
 
         // ── Escape global : ferme toute modale ouverte ──────────────────────
         if (e.key === 'Escape') {
+            // Quitter le mode LIM s'il est actif (v5.3)
+            if (limModeEnabled) {
+                setLimMode(false);
+                return;
+            }
             document.querySelectorAll('.modal-overlay').forEach(m => {
                 if (m.style.display === 'flex') fermerModal(m.id);
             });
@@ -2567,6 +2670,16 @@ let analyseResults = [];     // Points remarquables trouvés
 //   { type: 'root'|'intersection', x: Number, y: Number,
 //     fnA: String, fnB: String|null, cssColor: String }
 
+// ── LIMITES (v5.3) ────────────────────────────────────────────────────────
+// limModeEnabled : quand true, le clic sur le canvas pose une limite au lieu
+//                  de capturer cX/cY. Toggle via le bouton Δ LIM ou Échap.
+// limMarkers     : liste persistante des limites posées par l'utilisateur.
+//                  Chaque marker = { x, fnName, cssColor, result }
+//                  où result est l'objet retourné par computeLimit().
+//                  Persiste jusqu'à effacerGraphe() ou purgerMemoire().
+let limModeEnabled = false;
+let limMarkers = [];
+
 /**
  * Raffinement par bissection d'une racine dans [a, b] où g(a) et g(b) sont
  * de signes opposés. Retourne l'abscisse de la racine avec tolérance tol,
@@ -2739,6 +2852,29 @@ function analyseCurves() {
         'var(--text-neon)'
     );
 
+    // ── Détail point par point dans l'historique (v5.2) ─────────────────────
+    // Chaque point remarquable est loggé avec ses coordonnées formatées à 4
+    // chiffres significatifs. La couleur du log reprend celle du marqueur
+    // sur le canvas (couleur de la courbe pour les racines, jaune pour les
+    // intersections), pour que l'utilisateur fasse instantanément le lien
+    // visuel entre l'historique et le graphe.
+    const fmt = v => parseFloat(v.toPrecision(4)).toString();
+    for (const pt of analyseResults) {
+        if (pt.type === 'root') {
+            ajouterLog(
+                `${pt.fnA}(x) = 0`,
+                `x = ${fmt(pt.x)}   [racine]`,
+                pt.cssColor
+            );
+        } else { // 'intersection'
+            ajouterLog(
+                `${pt.fnA} ∩ ${pt.fnB}`,
+                `(${fmt(pt.x)}, ${fmt(pt.y)})   [intersection]`,
+                pt.cssColor
+            );
+        }
+    }
+
     dessiner();
 }
 
@@ -2857,4 +2993,397 @@ function findAnalysePointNear(px, py) {
         }
     }
     return bestPt;
+}
+
+// =============================================================================
+// ║                       CALCUL DES LIMITES (v5.3)                            ║
+// =============================================================================
+//
+// Détection de limites numériques par approche adaptative. Pour une fonction
+// f et un point a (fini ou ±∞), on évalue f en une séquence de points qui
+// s'approchent de a à des échelles décroissantes (10⁻¹, 10⁻², … 10⁻¹²).
+//
+// Classification du résultat :
+//
+//   'finite'    → convergence vers une valeur stable L
+//                  → result = { kind:'finite', value: L }
+//   'infinite'  → divergence monotone vers ±∞
+//                  → result = { kind:'infinite', sign: +1|-1 }
+//   'jump'      → limite gauche ≠ limite droite (discontinuité)
+//                  → result = { kind:'jump', left: L⁻, right: L⁺ }
+//   'dne'       → n'existe pas (oscillations, valeurs erratiques)
+//                  → result = { kind:'dne' }
+//
+// Le calcul ne demande pas de connaissance symbolique — c'est une méthode
+// purement numérique, robuste sur la plupart des cas scolaires (1/x en 0,
+// sin(1/x) en 0, (sin x)/x en 0, lim x→∞ de fonctions rationnelles, etc.).
+//
+// -----------------------------------------------------------------------------
+
+const LIMIT_CONVERGE_TOL  = 1e-6;   // Stabilité pour conclure à une limite finie
+const LIMIT_INFINITY_THR  = 1e10;   // Au-delà, on considère "infini"
+const LIMIT_JUMP_TOL      = 1e-4;   // Écart max entre lim gauche et droite pour une limite bilatérale
+
+/**
+ * Calcule la limite de f(x) en x = a par un côté ou les deux.
+ *
+ * @param {Function} fEval  Fonction prenant un x numérique et renvoyant f(x)
+ *                          (en général : x => fn.ast.evaluate(buildScope(x)))
+ * @param {number} a        Point cible, fini ou ±Infinity
+ * @param {'left'|'right'|'both'} side  Côté à calculer
+ * @returns {Object} Résultat structuré (voir kinds ci-dessus)
+ */
+function computeLimit(fEval, a, side = 'both') {
+    // Cas limites à ±∞ : on ne calcule qu'un côté.
+    if (!isFinite(a)) {
+        const sign = a > 0 ? +1 : -1;
+        // On évalue en x = sign * 10^k pour k = 1 .. 12
+        const values = [];
+        for (let k = 1; k <= 12; k++) {
+            const x = sign * Math.pow(10, k);
+            try {
+                const y = fEval(x);
+                if (typeof y === 'number' && isFinite(y)) values.push(y);
+                else if (typeof y === 'number') values.push(y); // ±∞
+                else values.push(NaN);
+            } catch (e) { values.push(NaN); }
+        }
+        return classifySequence(values);
+    }
+
+    // Cas limite en un point fini. On calcule gauche et droite séparément.
+    const computeOneSide = (dir) => {
+        // dir = +1 (droite) ou -1 (gauche)
+        const values = [];
+        for (let k = 1; k <= 12; k++) {
+            const h = Math.pow(10, -k);
+            const x = a + dir * h;
+            try {
+                const y = fEval(x);
+                if (typeof y === 'number') values.push(y);
+                else values.push(NaN);
+            } catch (e) { values.push(NaN); }
+        }
+        return classifySequence(values);
+    };
+
+    if (side === 'left')  return computeOneSide(-1);
+    if (side === 'right') return computeOneSide(+1);
+
+    // side === 'both' : comparer les deux côtés
+    const L = computeOneSide(-1);
+    const R = computeOneSide(+1);
+
+    // Les deux sont finies et proches → limite bilatérale finie
+    if (L.kind === 'finite' && R.kind === 'finite') {
+        if (Math.abs(L.value - R.value) < LIMIT_JUMP_TOL) {
+            return { kind: 'finite', value: (L.value + R.value) / 2 };
+        }
+        return { kind: 'jump', left: L.value, right: R.value };
+    }
+
+    // Les deux divergent vers le même infini → limite bilatérale infinie
+    if (L.kind === 'infinite' && R.kind === 'infinite' && L.sign === R.sign) {
+        return { kind: 'infinite', sign: L.sign };
+    }
+
+    // Les deux divergent vers des infinis opposés → "jump vers infini"
+    if (L.kind === 'infinite' && R.kind === 'infinite') {
+        return { kind: 'jump',
+                 left:  L.sign > 0 ? +Infinity : -Infinity,
+                 right: R.sign > 0 ? +Infinity : -Infinity };
+    }
+
+    // Mix fini/infini → jump
+    if (L.kind !== 'dne' && R.kind !== 'dne') {
+        const leftVal  = L.kind === 'finite' ? L.value : (L.sign > 0 ? +Infinity : -Infinity);
+        const rightVal = R.kind === 'finite' ? R.value : (R.sign > 0 ? +Infinity : -Infinity);
+        return { kind: 'jump', left: leftVal, right: rightVal };
+    }
+
+    // Au moins un côté n'existe pas
+    return { kind: 'dne' };
+}
+
+/**
+ * Classifie une séquence de valeurs obtenues en s'approchant du point cible.
+ * La séquence est ordonnée du plus éloigné (k=1) au plus proche (k=12).
+ * C'est l'ordre naturel pour détecter la convergence.
+ */
+function classifySequence(values) {
+    // Nettoyage : on enlève les NaN du début (la fonction peut ne pas être
+    // définie aux grandes échelles mais l'être près de la cible).
+    const clean = values.filter(v => typeof v === 'number' && !isNaN(v));
+    if (clean.length < 3) return { kind: 'dne' };
+
+    // On regarde les 4-5 dernières valeurs (les plus proches de a).
+    const tail = clean.slice(-5);
+
+    // Détection d'une divergence vers ±∞ :
+    // (a) soit les dernières valeurs sont toutes > LIMIT_INFINITY_THR en magnitude
+    // (b) soit la séquence est monotone en magnitude et la dernière valeur est grande
+    //     (cas 1/x en 0, où on a -10, -100, -1000, ..., -1e12).
+    const allHuge = tail.every(v => !isFinite(v) || Math.abs(v) > LIMIT_INFINITY_THR);
+    let divergesMonotone = false;
+    if (tail.length >= 3) {
+        const absTail = tail.map(v => Math.abs(v));
+        // strictement croissant en valeur absolue ?
+        let monotone = true;
+        for (let i = 1; i < absTail.length; i++) {
+            if (absTail[i] <= absTail[i-1] * 1.5) { monotone = false; break; }
+        }
+        // dernière valeur suffisamment grande pour conclure ?
+        if (monotone && absTail[absTail.length - 1] > 1e6) {
+            divergesMonotone = true;
+        }
+    }
+
+    if (allHuge || divergesMonotone) {
+        // Signe de la divergence : on regarde la dernière valeur finie connue
+        let sign = 0;
+        for (let i = tail.length - 1; i >= 0; i--) {
+            if (isFinite(tail[i]) && tail[i] !== 0) { sign = tail[i] > 0 ? +1 : -1; break; }
+            if (tail[i] === +Infinity) { sign = +1; break; }
+            if (tail[i] === -Infinity) { sign = -1; break; }
+        }
+        if (sign === 0) sign = +1; // défaut raisonnable
+        return { kind: 'infinite', sign };
+    }
+
+    // Sont-elles stables autour d'une valeur ? → limite finie
+    // On calcule l'écart max entre les 3 dernières valeurs finies.
+    const finiteTail = tail.filter(v => isFinite(v));
+    if (finiteTail.length >= 3) {
+        const last3 = finiteTail.slice(-3);
+        const maxV = Math.max(...last3);
+        const minV = Math.min(...last3);
+        const spread = maxV - minV;
+        // Tolérance absolue OU relative, selon l'échelle de la valeur
+        const scale = Math.max(1, Math.abs(last3[last3.length - 1]));
+        if (spread < LIMIT_CONVERGE_TOL * scale) {
+            let v = last3[last3.length - 1];
+            // Arrondi cosmétique : si la valeur est microscopique (<1e-10)
+            // et que la séquence décroît vers zéro, on renvoie 0 exact
+            // (cas typique : lim 1/x quand x→∞).
+            if (Math.abs(v) < 1e-10) v = 0;
+            return { kind: 'finite', value: v };
+        }
+    }
+
+    // Ni stable ni franchement infinie → n'existe pas (oscillation, chaos, etc.)
+    return { kind: 'dne' };
+}
+
+/**
+ * Formate un objet résultat de limite en texte lisible.
+ */
+function formatLimitResult(result) {
+    switch (result.kind) {
+        case 'finite':
+            return parseFloat(result.value.toPrecision(6)).toString();
+        case 'infinite':
+            return result.sign > 0 ? '+∞' : '-∞';
+        case 'jump':
+            return `${formatFiniteOrInf(result.left)} (gauche) ≠ ${formatFiniteOrInf(result.right)} (droite)`;
+        case 'dne':
+            return 'n\'existe pas';
+        default:
+            return '?';
+    }
+}
+function formatFiniteOrInf(v) {
+    if (v === +Infinity) return '+∞';
+    if (v === -Infinity) return '-∞';
+    return parseFloat(v.toPrecision(6)).toString();
+}
+
+/**
+ * Active ou désactive le mode LIM. Quand actif, le clic sur le canvas pose
+ * une limite au lieu de capturer cX/cY. Le curseur devient crosshair et le
+ * bouton est highlight.
+ */
+function setLimMode(on) {
+    limModeEnabled = !!on;
+    const btn = document.getElementById('limModeBtn');
+    if (btn) {
+        btn.classList.toggle('active', limModeEnabled);
+        btn.title = limModeEnabled
+            ? 'Mode LIM ACTIF — Cliquez sur le graphe pour poser une limite (Échap pour quitter)'
+            : 'Mode LIM : cliquer pour activer, puis cliquer sur le graphe pour poser une limite';
+    }
+    if (canvas) {
+        canvas.style.cursor = limModeEnabled ? 'crosshair' : '';
+    }
+    ajouterLog(
+        'Δ LIM',
+        limModeEnabled ? 'Mode LIM activé — cliquez sur le graphe' : 'Mode LIM désactivé',
+        limModeEnabled ? 'var(--text-neon)' : 'var(--text-dim)'
+    );
+}
+
+/**
+ * Appelée par le handler mouseup quand limModeEnabled === true.
+ * Calcule les limites de toutes les fonctions non-implicites au x cliqué,
+ * crée les marqueurs correspondants et les loggue dans l'historique.
+ */
+function poserLimiteAuClic(xClic) {
+    if (fonctionsAffichees.length === 0) {
+        ajouterLog('Δ LIM', 'Aucune fonction tracée', 'var(--text-error)');
+        return;
+    }
+
+    let posees = 0;
+    for (const fn of fonctionsAffichees) {
+        if (fn.implicit) continue; // les implicites n'ont pas de y=f(x)
+
+        const fEval = (xx) => fn.ast.evaluate(buildScope(xx));
+        const result = computeLimit(fEval, xClic, 'both');
+
+        limMarkers.push({
+            x: xClic,
+            fnName: fn.nom,
+            cssColor: fn.cssColor,
+            result: result
+        });
+
+        // Loggue chaque limite avec la couleur de la courbe
+        const xFmt = parseFloat(xClic.toPrecision(4)).toString();
+        ajouterLog(
+            `lim ${fn.nom}(x) x→${xFmt}`,
+            `= ${formatLimitResult(result)}`,
+            fn.cssColor
+        );
+        posees++;
+    }
+
+    if (posees > 0) dessiner();
+}
+
+/**
+ * Dessine les marqueurs de limites sur le canvas : cercle ouvert pour une
+ * limite finie, asymptote verticale pointillée pour une limite infinie,
+ * croix barrée pour "n'existe pas".
+ */
+function drawLimMarkers(W, H, xRange, yRange) {
+    if (limMarkers.length === 0) return;
+
+    for (const m of limMarkers) {
+        const cssVarName = m.cssColor.match(/var\(([^)]+)\)/)?.[1];
+        const color = cssVarName ? getCSSVar(cssVarName) : getCSSVar('--text-neon');
+
+        const px = ((m.x - view.xMin) / xRange) * W;
+        if (px < -20 || px > W + 20) continue; // hors fenêtre
+
+        if (m.result.kind === 'finite') {
+            // Cercle ouvert au point (x, L)
+            const py = H - ((m.result.value - view.yMin) / yRange) * H;
+            if (py < -20 || py > H + 20) continue;
+
+            ctx.save();
+            // "Creux" du cercle en fond de canvas
+            ctx.fillStyle = getCSSVar('--screen-bg');
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            // Contour coloré
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, 2 * Math.PI);
+            ctx.stroke();
+            // Petit label "L" à droite
+            ctx.fillStyle = color;
+            ctx.font = "11px 'JetBrains Mono', monospace";
+            ctx.textAlign = 'left';
+            ctx.fillText(
+                `lim=${parseFloat(m.result.value.toPrecision(4))}`,
+                px + 9, py + 4
+            );
+            ctx.restore();
+
+        } else if (m.result.kind === 'infinite') {
+            // Asymptote verticale pointillée sur toute la hauteur
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 4]);
+            ctx.globalAlpha = 0.75;
+            ctx.beginPath();
+            ctx.moveTo(px, 0);
+            ctx.lineTo(px, H);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+            // Label en haut
+            ctx.fillStyle = color;
+            ctx.font = "11px 'JetBrains Mono', monospace";
+            ctx.textAlign = 'center';
+            ctx.fillText(
+                `x=${parseFloat(m.x.toPrecision(4))} (${m.result.sign > 0 ? '+∞' : '-∞'})`,
+                px, 14
+            );
+            ctx.restore();
+
+        } else if (m.result.kind === 'jump') {
+            // Deux cercles ouverts, un pour gauche, un pour droite
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            // Trait vertical pointillé discret pour marquer la discontinuité
+            ctx.setLineDash([3, 3]);
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(px, 0);
+            ctx.lineTo(px, H);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+
+            // Cercles aux deux valeurs (si finies)
+            for (const v of [m.result.left, m.result.right]) {
+                if (isFinite(v)) {
+                    const py = H - ((v - view.yMin) / yRange) * H;
+                    ctx.fillStyle = getCSSVar('--screen-bg');
+                    ctx.beginPath(); ctx.arc(px, py, 5, 0, 2 * Math.PI); ctx.fill();
+                    ctx.beginPath(); ctx.arc(px, py, 5, 0, 2 * Math.PI); ctx.stroke();
+                }
+            }
+            ctx.fillStyle = color;
+            ctx.font = "11px 'JetBrains Mono', monospace";
+            ctx.textAlign = 'center';
+            ctx.fillText(`saut`, px, 14);
+            ctx.restore();
+
+        } else { // 'dne'
+            // Croix barrée au niveau de l'axe
+            const pyAxis = (view.yMin <= 0 && view.yMax >= 0)
+                ? H - ((0 - view.yMin) / yRange) * H
+                : H / 2;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px - 6, pyAxis - 6); ctx.lineTo(px + 6, pyAxis + 6);
+            ctx.moveTo(px + 6, pyAxis - 6); ctx.lineTo(px - 6, pyAxis + 6);
+            ctx.stroke();
+            ctx.fillStyle = color;
+            ctx.font = "11px 'JetBrains Mono', monospace";
+            ctx.textAlign = 'center';
+            ctx.fillText('DNE', px, pyAxis - 10);
+            ctx.restore();
+        }
+    }
+}
+
+/**
+ * Efface tous les marqueurs de limites et redessine.
+ */
+function effacerLimites() {
+    if (limMarkers.length === 0) {
+        ajouterLog('Δ LIM', 'Aucune limite à effacer', 'var(--text-dim)');
+        return;
+    }
+    limMarkers = [];
+    ajouterLog('Δ LIM', 'Toutes les limites effacées', 'var(--text-warn)');
+    dessiner();
 }

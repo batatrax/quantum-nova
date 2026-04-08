@@ -15,7 +15,7 @@
         body.widget-mode, body {
             margin: 0 !important;
             padding: 0 !important;
-            height: 100dvh !important; /* Force la hauteur à celle de la fenêtre */
+            height: 100vh !important; /* Force la hauteur à celle de la fenêtre */
             overflow-y: auto !important; /* Active l'ascenseur vertical si besoin */
             overflow-x: hidden !important; /* Empêche le défilement horizontal indésirable */
         }
@@ -97,6 +97,8 @@
             <button class="key key-sys" onclick="exportPNG()" title="Exporter le graphe courant en PNG haute résolution">📸 EXP</button>
             <button class="key key-sys" onclick="shareStateURL()" title="Copier dans le presse-papier une URL contenant l'état actuel (fonctions, variables, thème, vue)">🔗 SHARE</button>
             <button class="key key-sys" id="analyseBtn" onclick="setAnalyse(!analyseEnabled)" title="Lance le détecteur de racines et intersections">🔍 ANA</button>
+            <button class="key key-sys" id="limModeBtn" onclick="setLimMode(!limModeEnabled)" title="Mode LIM : cliquer pour activer, puis cliquer sur le graphe pour poser une limite">Δ LIM</button>
+            <button class="key key-sys" onclick="effacerLimites()" title="Effacer tous les marqueurs de limites">🗑️ LIM</button>
             <button class="key key-sys" onclick="resetVue()" title="Centrer le graphe : reset X à [-10,10] puis auto-fit Y">⌂ VUE</button>
             <button class="key key-sys" onclick="effacerGraphe()" title="Effacer les courbes">🗑️ GRF</button>
             <button class="key key-sys key-angle" id="angleModeBtn" onclick="toggleAngleMode()" title="Basculer Radians/Degrés">RAD</button>
