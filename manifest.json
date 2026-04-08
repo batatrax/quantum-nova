@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "QUANTUM-NOVA",
+  "version": "5.1",
+  "description": "Stellar Mathematics Engine - Side Panel",
+  "icons": {
+    "128": "icon.png"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "action": {
+    "default_title": "Activer Quantum-Nova"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["sidePanel"]
+}

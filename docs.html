@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="cyber">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUANTUM-NOVA — Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Overrides spécifiques à docs.html ─────────────────────────────── */
+        body { display: block; padding: 0; min-height: 100vh; overflow-x: hidden; }
+        .docs-nav { position: sticky; top: 0; z-index: 100; background: color-mix(in srgb, var(--desk-bg) 95%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--screen-border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 24px; }
+        .docs-nav-brand { color: var(--text-neon); font-size: 1rem; font-weight: 900; letter-spacing: 5px; text-decoration: none; white-space: nowrap; text-shadow: 0 0 16px color-mix(in srgb, var(--text-neon) 50%, transparent); }
+        .docs-nav-links { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+        .docs-nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; transition: all 0.15s; border: 1px solid transparent; white-space: nowrap; }
+        .docs-nav-links a:hover { color: var(--text-main); background: color-mix(in srgb, var(--screen-border) 40%, transparent); border-color: var(--screen-border); }
+        .docs-nav-links a.active { color: var(--text-neon); background: color-mix(in srgb, var(--text-neon) 12%, transparent); border-color: color-mix(in srgb, var(--text-neon) 40%, transparent); }
+        .docs-nav-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+        .btn-back { background: var(--key-act-bg); color: var(--key-act-text); border: none; padding: 8px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: filter 0.15s; }
+        .btn-back:hover { filter: brightness(1.2); }
+        .btn-theme { background: var(--key-sys-bg); color: var(--key-sys-text); border: 1px solid var(--screen-border); padding: 7px 14px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; cursor: pointer; transition: filter 0.15s; }
+        .btn-theme:hover { filter: brightness(1.3); }
+        .docs-layout { display: grid; grid-template-columns: 240px 1fr; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; gap: 40px; align-items: start; }
+        .docs-sidebar { position: sticky; top: 78px; padding: 24px 0; }
+        .sidebar-title { color: var(--text-dim); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; padding-left: 12px; }
+        .sidebar-link { display: block; color: var(--text-dim); text-decoration: none; font-size: 0.8rem; padding: 6px 12px; border-radius: 6px; border-left: 2px solid transparent; margin-bottom: 2px; transition: all 0.15s; }
+        .sidebar-link:hover { color: var(--text-main); background: color-mix(in srgb, var(--screen-border) 30%, transparent); }
+        .sidebar-link.active { color: var(--text-neon); border-color: var(--text-neon); background: color-mix(in srgb, var(--text-neon) 8%, transparent); }
+        .sidebar-link.sub { padding-left: 24px; font-size: 0.75rem; }
+        .docs-content { padding: 40px 0; max-width: 820px; }
+        .docs-hero { margin-bottom: 60px; padding-bottom: 40px; border-bottom: 1px solid var(--screen-border); }
+        .docs-hero h1 { color: var(--text-neon); font-size: 2.2rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; text-shadow: 0 0 30px color-mix(in srgb, var(--text-neon) 40%, transparent); }
+        .docs-hero .tagline { color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 24px; }
+        .docs-hero p { color: var(--text-main); font-size: 0.95rem; line-height: 1.8; max-width: 600px; }
+        .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+        .badge { background: color-mix(in srgb, var(--text-neon) 12%, transparent); border: 1px solid color-mix(in srgb, var(--text-neon) 35%, transparent); color: var(--text-neon); padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; }
+        .badge.green { background: color-mix(in srgb, var(--text-success) 12%, transparent); border-color: color-mix(in srgb, var(--text-success) 35%, transparent); color: var(--text-success); }
+        .badge.warn { background: color-mix(in srgb, var(--text-warn) 12%, transparent); border-color: color-mix(in srgb, var(--text-warn) 35%, transparent); color: var(--text-warn); }
+        .docs-section { margin-bottom: 64px; scroll-margin-top: 80px; }
+        .docs-section h2 { color: var(--text-neon); font-size: 1.3rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--screen-border); display: flex; align-items: center; gap: 10px; }
+        .docs-section h3 { color: var(--text-success); font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin: 28px 0 12px; }
+        .docs-section p { color: var(--text-main); font-size: 0.9rem; line-height: 1.8; margin-bottom: 12px; }
+        .docs-section ul, .docs-section ol { padding-left: 20px; color: var(--text-main); font-size: 0.88rem; line-height: 2; }
+        .docs-section li { margin-bottom: 4px; }
+        code { background: color-mix(in srgb, var(--text-neon) 12%, transparent); padding: 2px 8px; border-radius: 4px; color: var(--text-neon); font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.87em; border: 1px solid color-mix(in srgb, var(--text-neon) 25%, transparent); }
+        .doc-box { background: color-mix(in srgb, var(--text-neon) 8%, transparent); border-left: 3px solid var(--text-neon); padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 16px 0; font-size: 0.88rem; color: var(--text-main); line-height: 1.8; }
+        .doc-box.warn { border-color: var(--text-warn); background: color-mix(in srgb, var(--text-warn) 8%, transparent); }
+        .doc-box.success { border-color: var(--text-success); background: color-mix(in srgb, var(--text-success) 8%, transparent); }
+        .code-block { background: color-mix(in srgb, var(--screen-bg) 80%, var(--screen-border) 20%); border: 1px solid var(--screen-border); border-radius: 10px; padding: 20px 24px; margin: 16px 0; overflow-x: auto; }
+        .code-block pre { margin: 0; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 0.85rem; line-height: 1.7; color: var(--text-main); white-space: pre; }
+        .code-comment { color: var(--text-dim); font-style: italic; }
+        .code-keyword { color: var(--text-neon); }
+        .code-value { color: var(--text-success); }
+        .code-result { color: var(--text-warn); }
+        .ref-table { width: 100%; border-collapse: separate; border-spacing: 0 5px; font-size: 0.85rem; margin: 12px 0 24px; }
+        .ref-table thead th { text-align: left; padding: 8px 14px; color: var(--text-dim); font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--screen-border); }
+        .ref-table tbody td { padding: 10px 14px; background: color-mix(in srgb, var(--screen-border) 18%, transparent); vertical-align: middle; }
+        .ref-table tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+        .ref-table tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+        .ref-table tbody tr:hover td { filter: brightness(1.35); }
+        .shortcut-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+        .shortcut-item { display: flex; align-items: center; gap: 12px; background: color-mix(in srgb, var(--screen-border) 18%, transparent); border: 1px solid var(--screen-border); padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; color: var(--text-main); }
+        kbd { background: var(--key-sys-bg); border: 1px solid var(--screen-border); border-bottom: 2px solid color-mix(in srgb, var(--screen-border) 150%, transparent); border-radius: 5px; padding: 3px 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.8em; color: var(--text-neon); white-space: nowrap; flex-shrink: 0; }
+        .fn-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 16px 0; }
+        .fn-card { background: color-mix(in srgb, var(--screen-bg) 70%, var(--screen-border) 30%); border: 1px solid var(--screen-border); border-radius: 12px; padding: 16px 18px; transition: border-color 0.2s; }
+        .fn-card:hover { border-color: var(--text-neon); }
+        .fn-card .fn-expr { color: var(--text-neon); font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+        .fn-card .fn-desc { color: var(--text-dim); font-size: 0.8rem; line-height: 1.6; }
+        .fn-card .fn-tag { display: inline-block; margin-top: 8px; background: color-mix(in srgb, var(--text-neon) 12%, transparent); color: var(--text-neon); font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; font-weight: 700; }
+        .theme-showcase { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0; }
+        .theme-card { border-radius: 12px; padding: 20px; font-size: 0.85rem; line-height: 1.7; }
+        .theme-card.cyber { background: #12141f; border: 1px solid #7aa2f7; color: #c0caf5; }
+        .theme-card.light { background: #f5f6fa; border: 1px solid #2563eb; color: #1a1e2e; }
+        .theme-card.phosphor { background: #001400; border: 1px solid #00ff00; color: #00dd00; }
+        .theme-card.plasma { background: #1a0030; border: 1px solid #e040fb; color: #f0d0ff; }
+        .theme-card strong { display: block; font-size: 0.9rem; margin-bottom: 8px; }
+        .theme-card.cyber strong { color: #7aa2f7; }
+        .theme-card.light strong { color: #2563eb; }
+        .theme-card.phosphor strong { color: #00ff00; }
+        .theme-card.plasma strong { color: #e040fb; }
+        .section-divider { border: none; border-top: 1px solid var(--screen-border); margin: 48px 0; }
+        .docs-footer { text-align: center; padding: 32px; color: var(--text-dim); font-size: 0.75rem; letter-spacing: 1px; border-top: 1px solid var(--screen-border); max-width: 1200px; margin: 0 auto; }
+        @media (max-width: 900px) { .docs-layout { grid-template-columns: 1fr; } .docs-sidebar { display: none; } .docs-nav { padding: 0 16px; } .docs-nav-links { display: none; } .docs-content { padding: 24px 0; } }
+        @media (max-width: 600px) { .docs-hero h1 { font-size: 1.4rem; } .fn-gallery { grid-template-columns: 1fr; } .shortcut-grid { grid-template-columns: 1fr; } .theme-showcase { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body>
+
+<nav class="docs-nav">
+    <a href="index.html" class="docs-nav-brand">QUANTUM&#8209;NOVA</a>
+
+    <div class="docs-nav-links">
+        <a href="#demarrage"    class="active">Démarrage</a>
+        <a href="#evaluation">Évaluation</a>
+        <a href="#fonctions">Fonctions</a>
+        <a href="#grapheur">Grapheur</a>
+        <a href="#mode-ang">Mode Angulaire</a>
+        <a href="#raccourcis">Raccourcis</a>
+        <a href="#clavier-phys">Clavier</a>
+        <a href="#interface">Interface</a>
+        <a href="#themes">Thèmes</a>
+        <a href="#architecture">Architecture</a>
+    </div>
+
+    <div class="docs-nav-actions">
+        <button class="btn-theme" onclick="cycleTheme()" title="Changer le thème">🎨</button>
+        <a href="index.html" class="btn-back">← Retour à la calculatrice</a>
+    </div>
+</nav>
+
+<div class="docs-layout">
+
+    <aside class="docs-sidebar">
+        <div class="sidebar-title">Table des matières</div>
+        <a href="#demarrage"   class="sidebar-link">🚀 Démarrage Rapide</a>
+        <a href="#evaluation"  class="sidebar-link">🔢 Évaluation</a>
+        <a href="#variables"   class="sidebar-link sub">Variables &amp; Mémoire</a>
+        <a href="#fonctions"   class="sidebar-link">📐 Fonctions Math</a>
+        <a href="#trig"        class="sidebar-link sub">Trigonométrie</a>
+        <a href="#log-exp"     class="sidebar-link sub">Log &amp; Exp</a>
+        <a href="#entiers"     class="sidebar-link sub">Entiers &amp; Modulo</a>
+        <a href="#symbolique"  class="sidebar-link sub">Calcul Symbolique</a>
+        <a href="#grapheur"    class="sidebar-link">📈 Grapheur</a>
+        <a href="#capture"     class="sidebar-link sub">Capture Spatiale (cX)</a>
+        <a href="#navigation"  class="sidebar-link sub">Navigation Canvas</a>
+        <a href="#legende"     class="sidebar-link sub">Légende Interactive</a>
+        <a href="#exemples"    class="sidebar-link sub">Tracés Remarquables</a>
+        <a href="#mode-ang"    class="sidebar-link">🔵 Mode Angulaire</a>
+        <a href="#raccourcis"  class="sidebar-link">⌨️ Raccourcis</a>
+        <a href="#clavier-phys" class="sidebar-link">⌨ Clavier physique</a>
+        <a href="#kbd-universal" class="sidebar-link sub">Profil Universel</a>
+        <a href="#kbd-azerty"  class="sidebar-link sub">Profils AZERTY BE/FR</a>
+        <a href="#kbd-table"   class="sidebar-link sub">Table des symboles</a>
+        <a href="#interface"   class="sidebar-link">🖥️ Interface &amp; Layout</a>
+        <a href="#layout-vert" class="sidebar-link sub">Layout vertical</a>
+        <a href="#resize"      class="sidebar-link sub">Poignée de resize</a>
+        <a href="#theme-select" class="sidebar-link sub">Sélecteur de thème</a>
+        <a href="#themes"      class="sidebar-link">🎨 Thèmes Visuels</a>
+        <a href="#architecture" class="sidebar-link">🏗️ Architecture</a>
+        <a href="#bugs-fixes"  class="sidebar-link sub">Nouveautés v4.1</a>
+    </aside>
+
+    <main class="docs-content">
+
+        <div class="docs-hero" id="demarrage">
+            <h1>QUANTUM-NOVA</h1>
+            <div class="tagline">Stellar Mathematics Engine — Documentation v4.1</div>
+            <p>QUANTUM-NOVA est un environnement de calcul scientifique interactif fonctionnant entièrement dans le navigateur, sans installation. Il combine un moteur d'évaluation symbolique (math.js), un grapheur Canvas pixel-par-pixel et une interface clavier complète.</p>
+            <div class="badge-row">
+                <span class="badge">v4.1</span>
+                <span class="badge green">math.js 11.8.0</span>
+                <span class="badge green">HiDPI Retina</span>
+                <span class="badge green">4 Thèmes</span>
+                <span class="badge warn">DEG / RAD</span>
+            </div>
+        </div>
+
+        <section class="docs-section" id="demarrage-rapide">
+            <h2>🚀 Démarrage Rapide</h2>
+            <div class="doc-box success">
+                <ol style="margin:0;padding-left:20px;line-height:2.2">
+                    <li>Tapez <code>2^10</code> → Entrée → résultat : <strong>1024</strong></li>
+                    <li>Tapez <code>a = 3</code> → Entrée → variable <em>a</em> mémorisée</li>
+                    <li>Tapez <code>f(x) = a * sin(x)</code> → Entrée → courbe tracée</li>
+                    <li>Faites tourner la molette sur le graphe pour zoomer</li>
+                    <li>Cliquez sur le graphe pour capturer <strong>cX</strong> et <strong>cY</strong></li>
+                </ol>
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="evaluation">
+            <h2>🔢 Évaluation des Expressions</h2>
+            <div class="code-block"><pre>
+<span class="code-comment">── Priorité 1 : Définition de fonction ──────────────────────</span>
+<span class="code-keyword">f(x) = sin(x) * x</span>      <span class="code-result">→ Trace + mémorise f</span>
+
+<span class="code-comment">── Priorité 2 : Assignation de variable ─────────────────────</span>
+<span class="code-keyword">a = 2.5</span>               <span class="code-result">→ Stocke a = 2.5</span>
+
+<span class="code-comment">── Priorité 3 : Dérivée symbolique ──────────────────────────</span>
+<span class="code-keyword">derivative(x^3, x)</span>    <span class="code-result">→ "3 * x^2"</span>
+
+<span class="code-comment">── Priorité 4 : Tracé rapide (contient 'x') ─────────────────</span>
+<span class="code-keyword">x^2 - 4</span>              <span class="code-result">→ Tracé sous le nom y1</span>
+
+<span class="code-comment">── Priorité 5 : Calcul numérique ────────────────────────────</span>
+<span class="code-keyword">log(1000, 10)</span>        <span class="code-result">→ 3</span>
+</pre></div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="fonctions">
+            <h2>📐 Fonctions Mathématiques</h2>
+            <div class="doc-box success">
+                <strong>💡 Astuce Pro : Le Catalogue Visuel</strong><br>
+                Plutôt que de chercher comment écrire une commande complexe, cliquez sur le bouton <strong>Ω CAT.</strong> dans la barre supérieure du clavier. Ce catalogue interactif vous permet d'insérer en un clic la syntaxe exacte pour les dérivées, les calculs de matrices ou les fonctions statistiques.
+            </div>
+
+            <h3 id="trig">Trigonométrie</h3>
+            <table class="ref-table">
+                <thead><tr><th>Fonction</th><th>Description</th><th>RAD</th><th>DEG</th></tr></thead>
+                <tbody>
+                    <tr><td><code>sin(x)</code></td><td>Sinus (RAD ou DEG)</td><td>sin(pi/2) = 1</td><td>sin(90) = 1</td></tr>
+                    <tr><td><code>asin(x)</code></td><td>Arc sinus (−1 ≤ x ≤ 1)</td><td>asin(1) = π/2</td><td>asin(1) = 90</td></tr>
+                </tbody>
+            </table>
+
+            <h3 id="symbolique">Calcul Symbolique</h3>
+            <p>math.js inclut un moteur de calcul symbolique permettant les dérivées analytiques.</p>
+            <table class="ref-table">
+                <thead><tr><th>Expression</th><th>Résultat</th></tr></thead>
+                <tbody>
+                    <tr><td><code>derivative(x^4, x)</code></td><td>4 * x^3</td></tr>
+                    <tr><td><code>derivative(sin(x), x)</code></td><td>cos(x)</td></tr>
+                </tbody>
+            </table>
+            <div class="doc-box">
+                <strong>Astuce :</strong> Pour tracer une dérivée, copiez le résultat textuel et définissez-le comme fonction :
+                <br><code>derivative(x^3, x)</code> → résultat : <em>3 * x^2</em>
+                <br>Puis : <code>g(x) = 3 * x^2</code>
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="grapheur">
+            <h2>📈 Guide du Grapheur</h2>
+
+            <h3 id="capture" style="color:var(--text-error);">Capture Spatiale (Click-to-Fetch)</h3>
+            <p>Le grapheur n'est pas qu'un écran de sortie, c'est aussi un périphérique d'entrée de précision.</p>
+            <ul>
+                <li><strong>Cliquez n'importe où</strong> sur le canvas.</li>
+                <li>Un réticule rouge persistant s'affiche.</li>
+                <li>Les coordonnées du point sont instantanément téléversées dans le moteur mathématique sous les variables <code>cX</code> et <code>cY</code>.</li>
+            </ul>
+            <div class="code-block"><pre>
+<span class="code-comment">// Après avoir cliqué sur un point d'intérêt :</span>
+<span class="code-keyword">f(cX) + cY</span>     <span class="code-result">→ Évalue l'équation en ce point précis</span>
+<span class="code-keyword">a = cX</span>         <span class="code-result">→ Sauvegarde la coordonnée dans une variable</span>
+</pre></div>
+
+            <h3 id="navigation">Navigation sur le Canvas</h3>
+            <table class="ref-table">
+                <thead><tr><th>Geste / Action</th><th>Effet</th></tr></thead>
+                <tbody>
+                    <tr><td>Cliquer-glisser</td><td>Panoramique (pan)</td></tr>
+                    <tr><td>Molette souris</td><td>Zoom centré sur le curseur</td></tr>
+                    <tr><td>2 doigts (tactile)</td><td>Zoom par pincement</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="mode-ang">
+            <h2>🔵 Mode Angulaire RAD / DEG</h2>
+            <p>Le mode angulaire contrôle l'interprétation des arguments trigonométriques. Basculé par le bouton <strong>RAD</strong>.</p>
+            <table class="ref-table">
+                <thead><tr><th>Expression</th><th>RAD</th><th>DEG</th></tr></thead>
+                <tbody>
+                    <tr><td><code>sin(30)</code></td><td>−0.9880...</td><td>0.5 (sin de 30°)</td></tr>
+                    <tr><td><code>sin(pi/6)</code></td><td>0.5</td><td>~0.009</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="clavier-phys">
+            <h2>⌨ Clavier Physique &amp; Profils de Saisie</h2>
+            <p>QUANTUM-NOVA reconnaît les caractères mathématiques Unicode tapés directement au clavier physique et les convertit automatiquement en syntaxe ASCII compréhensible par le moteur math.js. Selon votre disposition, certains symboles sont accessibles en touche directe — par exemple <code>²</code> sur AZERTY belge, à gauche du <code>&amp;</code>. Taper cette touche après un <code>x</code> insère donc directement <code>x^2</code> dans la console.</p>
+
+            <div class="doc-box success">
+                <strong>Pourquoi un système de profils ?</strong><br>
+                Plutôt que d'imposer une seule disposition de clavier, QUANTUM-NOVA propose plusieurs profils interchangeables. Au démarrage, l'application devine votre disposition à partir de <code>navigator.language</code>, puis vous laisse modifier ce choix manuellement. La sélection est mémorisée dans <code>localStorage</code> et restaurée lors des prochaines visites.
+            </div>
+
+            <h3 id="kbd-universal">🌐 Profil Universel</h3>
+            <p>Le profil <strong>Universel</strong> est le socle commun à tous les autres. Il contient tous les symboles Unicode mathématiques courants, et fonctionne sur n'importe quel clavier physique (BE, FR, DE, US, UK, …) dès lors que le caractère arrive d'une manière ou d'une autre dans le champ de saisie : touche directe, AltGr, Option (Mac), charmap Windows, ou simple copier-coller depuis une page web.</p>
+
+            <div class="doc-box">
+                <strong>Cas d'usage typique :</strong> Vous lisez un article de Wikipédia mentionnant <code>π/√2 ≈ 2.221</code>. Vous copiez-collez l'expression directement dans QUANTUM-NOVA, et l'application la convertit instantanément en <code>pi/sqrt(2)</code> avant évaluation.
+            </div>
+
+            <h3 id="kbd-azerty">🇧🇪 🇫🇷 Profils AZERTY (Belge &amp; Français)</h3>
+            <p>Les profils <strong>BE</strong> et <strong>FR</strong> héritent de l'Universel et y ajoutent une spécificité critique pour les utilisateurs de claviers AZERTY : <strong>l'interception de la touche morte <code>^</code></strong>.</p>
+
+            <div class="doc-box warn">
+                <strong>Le problème de la touche morte :</strong><br>
+                Sur les claviers AZERTY belge et français, la touche <code>^</code> (à droite du <code>p</code>) est par défaut une <em>dead key</em> : taper <code>^</code> ne produit visuellement rien tant qu'on n'a pas tapé une lettre derrière (â, ê, î, ô, û). Pour les mathématiques, c'est insupportable — on veut taper <code>x^2</code> directement, sans devoir faire <code>^</code> + <kbd>Espace</kbd> + <code>2</code>.
+                <br><br>
+                <strong>La solution QUANTUM-NOVA :</strong> les profils BE et FR détectent l'événement <code>keydown</code> avec <code>e.key === 'Dead'</code> et <code>e.code === 'BracketLeft'</code>, puis insèrent immédiatement le caractère <code>^</code> sans attendre la lettre suivante.
+            </div>
+
+            <h3>Auto-détection du profil au démarrage</h3>
+            <p>L'algorithme de détection est volontairement simple et transparent :</p>
+            <table class="ref-table">
+                <thead><tr><th><code>navigator.language</code></th><th>Profil sélectionné</th></tr></thead>
+                <tbody>
+                    <tr><td><code>fr-BE</code> ou <code>nl-BE</code></td><td>🇧🇪 Belge AZERTY</td></tr>
+                    <tr><td><code>fr</code>, <code>fr-FR</code>, <code>fr-CA</code>, <code>fr-CH</code></td><td>🇫🇷 Français AZERTY</td></tr>
+                    <tr><td>Tout le reste (en, de, es, …)</td><td>🌐 Universel</td></tr>
+                </tbody>
+            </table>
+            <p>Si une valeur a été persistée par un choix manuel précédent, elle est restaurée et prend le pas sur l'auto-détection.</p>
+
+            <h3>Comment changer de profil</h3>
+            <ul>
+                <li><strong>Méthode rapide :</strong> Cliquez sur le bouton <code>⌨ KBD</code> de la barre supérieure du clavier visuel. Chaque clic passe au profil suivant (cycle universal → be → fr → universal …). Le libellé du bouton affiche en permanence le drapeau du profil actif.</li>
+                <li><strong>Méthode précise :</strong> Ouvrez <code>📖 DOC</code> → onglet <strong>⌨ Clavier physique</strong>, et choisissez dans le menu déroulant. La description du profil sélectionné s'affiche immédiatement en dessous.</li>
+            </ul>
+
+            <h3 id="kbd-table">Table complète des conversions Unicode → math.js</h3>
+            <p>Tous les profils reconnaissent ces caractères. Si un symbole vous manque, signalez-le et il sera ajouté à la map universelle.</p>
+
+            <table class="ref-table">
+                <thead>
+                    <tr><th>Catégorie</th><th>Caractères Unicode</th><th>Conversion</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Exposants</strong></td>
+                        <td><code>⁰</code> <code>¹</code> <code>²</code> <code>³</code> <code>⁴</code> <code>⁵</code> <code>⁶</code> <code>⁷</code> <code>⁸</code> <code>⁹</code></td>
+                        <td><code>^0</code> à <code>^9</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Multiplication</strong></td>
+                        <td><code>×</code> <code>·</code></td>
+                        <td><code>*</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Division</strong></td>
+                        <td><code>÷</code></td>
+                        <td><code>/</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tirets typographiques</strong></td>
+                        <td><code>−</code> (U+2212) <code>–</code> <code>—</code></td>
+                        <td><code>-</code> (ASCII)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Constantes</strong></td>
+                        <td><code>π</code> <code>τ</code> <code>φ</code> <code>ϕ</code> <code>∞</code></td>
+                        <td><code>pi</code>, <code>tau</code>, <code>phi</code>, <code>phi</code>, <code>Infinity</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Racines</strong></td>
+                        <td><code>√</code> <code>∛</code></td>
+                        <td><code>sqrt(</code>, <code>cbrt(</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Comparateurs</strong></td>
+                        <td><code>≤</code> <code>≥</code> <code>≠</code> <code>≈</code></td>
+                        <td><code>&lt;=</code>, <code>&gt;=</code>, <code>!=</code>, <code>==</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Réducteurs</strong></td>
+                        <td><code>∑</code> <code>∏</code></td>
+                        <td><code>sum(</code>, <code>prod(</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Divers</strong></td>
+                        <td><code>±</code> <code>°</code></td>
+                        <td><code>+-</code>, <code>deg</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Exemples concrets</h3>
+            <div class="code-block"><pre>
+<span class="code-comment">── Sur AZERTY-BE, taper directement au clavier : ─────────────</span>
+<span class="code-keyword">x²+3x-2</span>            <span class="code-result">→ devient x^2+3x-2 (puis tracé)</span>
+<span class="code-keyword">π/4</span>                 <span class="code-result">→ devient pi/4</span>
+<span class="code-keyword">√(2)</span>                <span class="code-result">→ devient sqrt((2)</span>
+<span class="code-keyword">2×3÷4</span>               <span class="code-result">→ devient 2*3/4</span>
+
+<span class="code-comment">── Copier-coller depuis Wikipédia (n'importe quel clavier) : ─</span>
+<span class="code-keyword">e^(iπ)+1≈0</span>          <span class="code-result">→ devient e^(i*pi)+1==0</span>
+</pre></div>
+
+            <h3>Nouvelle ligne de touches scientifiques (v4.1+)</h3>
+            <p>En complément du clavier physique, le clavier visuel a été enrichi d'une ligne dédiée aux fonctions avancées les plus demandées :</p>
+            <table class="ref-table">
+                <thead><tr><th>Touche</th><th>Insère</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>tanh</code></td><td><code>tanh(</code></td><td>Tangente hyperbolique</td></tr>
+                    <tr><td><code>exp</code></td><td><code>exp(</code></td><td>Exponentielle e^x (équivalent direct à <code>e^x</code>)</td></tr>
+                    <tr><td><code>x³</code></td><td><code>^3</code></td><td>Élévation au cube (en complément du <code>x²</code> existant)</td></tr>
+                    <tr><td><code>∛</code></td><td><code>cbrt(</code></td><td>Racine cubique</td></tr>
+                    <tr><td><code>ⁿ√x</code></td><td><code>nthRoot(</code></td><td>Racine n-ième : <code>nthRoot(8, 3) = 2</code></td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="interface">
+            <h2>🖥️ Interface &amp; Layout</h2>
+            <p>Depuis la version v4.1+, QUANTUM-NOVA adopte une disposition verticale inspirée des véritables calculatrices graphiques (TI-84, Casio fx-CG). Cette refonte a été pensée pour permettre une intégration fluide en sidebar sur n'importe quelle page web, tout en restant pleinement fonctionnelle en mode standalone.</p>
+
+            <h3 id="layout-vert">Layout vertical responsive (320 → 480 px)</h3>
+            <p>Le châssis de la calculatrice (<code>.workstation</code>) est désormais organisé en une seule colonne empilée verticalement. De haut en bas :</p>
+            <ol>
+                <li><strong>En-tête de marque</strong> — logo QUANTUM-NOVA et tagline compacts</li>
+                <li><strong>Module écran</strong> — canvas graphique, overlay console et légende des fonctions</li>
+                <li><strong>Poignée de redimensionnement</strong> — barre horizontale ajustable</li>
+                <li><strong>Module clavier</strong> — barre système (2 lignes × 4 touches) et grille principale (5 colonnes)</li>
+            </ol>
+
+            <div class="doc-box success">
+                <strong>Intégration en sidebar :</strong><br>
+                La largeur du châssis s'adapte automatiquement entre <code>320px</code> (sidebar compacte) et <code>480px</code> (confort de lecture) selon la largeur disponible dans le conteneur parent. Aucune configuration n'est nécessaire — il suffit de placer l'élément <code>&lt;div class="workstation"&gt;</code> dans votre sidebar HTML.
+            </div>
+
+            <div class="code-block"><pre>
+<span class="code-comment">── Exemple d'intégration en sidebar ─────────────────────────</span>
+&lt;aside class="page-sidebar" style="width: 400px;"&gt;
+    &lt;!-- Copier ici le contenu de .workstation depuis index.html --&gt;
+    &lt;div class="workstation"&gt; ... &lt;/div&gt;
+&lt;/aside&gt;
+</pre></div>
+
+            <h3 id="resize">Poignée de redimensionnement de l'écran</h3>
+            <p>La fine barre horizontale située entre le module écran et le clavier permet d'ajuster dynamiquement la hauteur allouée au graphe, au détriment ou au bénéfice de l'espace clavier.</p>
+
+            <table class="ref-table">
+                <thead><tr><th>Action</th><th>Effet</th></tr></thead>
+                <tbody>
+                    <tr><td>Glisser verticalement (souris)</td><td>Ajuste la hauteur en temps réel</td></tr>
+                    <tr><td>Glisser verticalement (1 doigt, tactile)</td><td>Idem, compatible tablette et mobile</td></tr>
+                    <tr><td>Double-clic sur la poignée</td><td>Reset à la hauteur par défaut (380 px)</td></tr>
+                    <tr><td>Au relâchement</td><td>La hauteur est persistée dans <code>localStorage</code></td></tr>
+                </tbody>
+            </table>
+
+            <div class="doc-box">
+                <strong>Contraintes :</strong> La hauteur est bornée entre <code>200 px</code> (minimum utilisable) et <code>75 % de la hauteur de la fenêtre</code> (pour garder le clavier accessible). Le canvas est automatiquement recalibré en HiDPI à chaque changement, évitant tout flou pixelisé après redimensionnement.
+            </div>
+
+            <h3 id="theme-select">Sélecteur de thème en menu déroulant</h3>
+            <p>Le bouton cyclique 🎨 <strong>THÈME</strong> des versions précédentes a été remplacé par un véritable menu déroulant (<code>&lt;select&gt;</code>) situé dans la barre système du clavier. Il affiche en permanence le thème actif et permet d'en sélectionner un autre en un seul clic, sans devoir cycler à travers les quatre options.</p>
+
+            <table class="ref-table">
+                <thead><tr><th>Thème</th><th>Usage recommandé</th></tr></thead>
+                <tbody>
+                    <tr><td>☀️ <strong>E-Ink Light</strong> <em>(défaut)</em></td><td>Lecture diurne, intégration sidebar sur pages web claires, impression</td></tr>
+                    <tr><td>🌑 <strong>Cyber Dark</strong></td><td>Travail nocturne prolongé, esthétique Tokyo Night</td></tr>
+                    <tr><td>📟 <strong>Phosphor Matrix</strong></td><td>Ambiance terminal rétro, nostalgie VT100</td></tr>
+                    <tr><td>🌈 <strong>Neon Plasma</strong></td><td>Présentations, démos, esthétique cyberpunk</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Persistance des préférences utilisateur</h3>
+            <p>Toutes les préférences d'interface sont automatiquement sauvegardées dans le <code>localStorage</code> du navigateur et restaurées au démarrage suivant. Aucune inscription, aucun cookie tiers, aucune synchronisation serveur.</p>
+
+            <table class="ref-table">
+                <thead><tr><th>Clé localStorage</th><th>Contenu</th></tr></thead>
+                <tbody>
+                    <tr><td><code>qn:theme</code></td><td>Identifiant du thème actif (cyber, light, phosphor, plasma)</td></tr>
+                    <tr><td><code>qn:kbdProfile</code></td><td>Identifiant du profil clavier (universal, be, fr)</td></tr>
+                    <tr><td><code>qn:screenHeight</code></td><td>Hauteur en pixels du module écran (entier)</td></tr>
+                </tbody>
+            </table>
+
+            <div class="doc-box warn">
+                <strong>Mode privé :</strong> Si votre navigateur bloque <code>localStorage</code> (mode privé strict, quotas épuisés), QUANTUM-NOVA continue de fonctionner normalement mais ne mémorisera pas vos préférences entre sessions. Aucun message d'erreur n'est affiché.
+            </div>
+
+            <h3>Panneau historique repliable</h3>
+            <p>Depuis la v4.1+, l'historique des commandes n'est plus affiché en surimpression sur le graphe. Il vit dans un panneau dédié situé sous le module écran, <strong>replié par défaut</strong> pour maximiser la visibilité du graphe. Le header affiche le nombre d'entrées et un chevron ▼/▲. Un simple clic sur le header bascule l'état. La préférence est persistée dans <code>localStorage['qn:logCollapsed']</code>.</p>
+
+            <h3>Commandes texte dans la console</h3>
+            <p>Plutôt que d'ouvrir des modales ou de cliquer dans les menus, vous pouvez taper des commandes directement dans le champ de saisie. Elles sont interceptées avant toute évaluation mathématique.</p>
+            <table class="ref-table">
+                <thead><tr><th>Commande</th><th>Effet</th></tr></thead>
+                <tbody>
+                    <tr><td><code>aide</code> / <code>help</code> / <code>?</code></td><td>Ouvre le manuel intégré (ce modal)</td></tr>
+                    <tr><td><code>doc</code> / <code>docs</code></td><td>Ouvre la documentation complète dans un nouvel onglet</td></tr>
+                    <tr><td><code>theme &lt;nom&gt;</code></td><td>Change le thème : <code>cyber</code>/<code>dark</code>, <code>light</code>/<code>clair</code>, <code>phosphor</code>/<code>matrix</code>, <code>plasma</code>/<code>neon</code></td></tr>
+                    <tr><td><code>kbd &lt;profil&gt;</code></td><td>Change le profil clavier : <code>universal</code>, <code>be</code>, <code>fr</code></td></tr>
+                    <tr><td><code>clear</code> / <code>cls</code></td><td>Vide le panneau historique</td></tr>
+                    <tr><td><code>reset</code></td><td>Recentre le graphe sur l'origine</td></tr>
+                    <tr><td><code>popup</code> / <code>widget</code></td><td>Ouvre la calculatrice en fenêtre flottante</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Mode widget (fenêtre détachée)</h3>
+            <p>Le bouton <strong>📌 POP</strong> de la barre système (ou la commande texte <code>popup</code>) ouvre QUANTUM-NOVA dans une fenêtre popup d'environ 420×780 px, centrée à l'écran. L'URL reçoit le paramètre <code>?widget=1</code> qui déclenche le mode compact : la bannière de marque est masquée pour maximiser l'espace disponible.</p>
+            <div class="doc-box warn">
+                <strong>Limitation honnête :</strong> Depuis Chrome 90+, les navigateurs modernes ignorent les options <code>menubar=no</code>, <code>toolbar=no</code> et <code>location=no</code> pour des raisons de sécurité. Une mini barre d'URL reste visible en haut de la popup. Pour un vrai mode "sans chrome" intégral, il faudrait empaqueter l'application en PWA installable (manifest.webmanifest + service worker).
+            </div>
+            <div class="doc-box">
+                Si le popup est bloqué par le navigateur, un message apparaît dans l'historique. Autorisez les popups pour ce site dans les paramètres du navigateur et réessayez.
+            </div>
+        </section>
+
+        <hr class="section-divider">
+
+        <section class="docs-section" id="architecture">
+            <h2>🏗️ Architecture du Projet</h2>
+
+            <h3 id="bugs-fixes">Nouveautés et Correctifs v4.1</h3>
+            <table class="ref-table">
+                <thead><tr><th>Amélioration</th><th>Bénéfice apporté</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>Support Retina / HiDPI</td>
+                        <td>Le Canvas utilise <code>devicePixelRatio</code>. Plus aucun flou sur les écrans haute définition.</td>
+                    </tr>
+                    <tr>
+                        <td>Capture Spatiale (Click-to-fetch)</td>
+                        <td>Différencie un clic d'un glissement pour capturer <code>cX</code> et <code>cY</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Catalogue Visuel (Ω SYMBOLES)</td>
+                        <td>Interface modale pour insérer rapidement matrices, dérivées et stats.</td>
+                    </tr>
+                    <tr>
+                        <td>Profils clavier multi-dispositions</td>
+                        <td>Système universal/BE/FR avec auto-détection via <code>navigator.language</code>, persistance <code>localStorage</code> et interception de la touche morte <code>^</code> sur AZERTY.</td>
+                    </tr>
+                    <tr>
+                        <td>Conversion Unicode → ASCII math.js</td>
+                        <td>Reconnaissance directe de <code>² ³ × ÷ π √ ∛ ∞ ≤ ≥ ≠ ∑ ∏</code> et autres symboles tapés au clavier ou copiés-collés.</td>
+                    </tr>
+                    <tr>
+                        <td>Nouvelle ligne de touches scientifiques</td>
+                        <td>Ajout de <code>tanh</code>, <code>exp(</code>, <code>x³</code>, <code>∛</code>, <code>nthRoot(</code> au clavier visuel.</td>
+                    </tr>
+                    <tr>
+                        <td>Catalogue Ω enrichi</td>
+                        <td>Ajout des catégories Combinatoire, Nombres complexes, Constantes, et statistiques étendues (median, mode, sum, prod, min, max).</td>
+                    </tr>
+                    <tr>
+                        <td>Layout vertical responsive</td>
+                        <td>Refonte complète en une colonne empilée (320–480 px), intégrable en sidebar de n'importe quelle page web. Fin du layout 2-colonnes 1050 px.</td>
+                    </tr>
+                    <tr>
+                        <td>Poignée de redimensionnement</td>
+                        <td>L'utilisateur ajuste dynamiquement la hauteur du module écran à la souris ou au toucher. Double-clic = reset. Persistance <code>localStorage</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Sélecteur de thème en menu déroulant</td>
+                        <td>Remplacement du bouton cyclique 🎨 par un <code>&lt;select&gt;</code> intégré à la barre système, avec persistance et thème <strong>light</strong> par défaut.</td>
+                    </tr>
+                    <tr>
+                        <td>Libellés de touches plus explicites</td>
+                        <td><code>floor(x)</code>, <code>ceil(x)</code>, <code>round</code>, <code>mod</code> remplacent les notations mathématiques abrégées (<code>⌊x⌋</code>, <code>⌈x⌉</code>, <code>rnd</code>).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+</div>
+
+<footer class="docs-footer">
+    QUANTUM-NOVA v4.1 &nbsp;·&nbsp; Stellar Mathematics Engine &nbsp;·&nbsp;
+    Propulsé par <a href="https://mathjs.org" target="_blank" rel="noopener" style="color:var(--text-neon);text-decoration:none">math.js 11.8.0</a>
+</footer>
+
+<script>
+    const themes = ['cyber', 'light', 'phosphor', 'plasma'];
+    let currentTheme = 0;
+    function cycleTheme() {
+        currentTheme = (currentTheme + 1) % themes.length;
+        document.documentElement.setAttribute('data-theme', themes[currentTheme]);
+    }
+
+    const sections  = document.querySelectorAll('.docs-section, .docs-hero');
+    const navLinks  = document.querySelectorAll('.sidebar-link');
+    const topLinks  = document.querySelectorAll('.docs-nav-links a');
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                navLinks.forEach(l => l.classList.remove('active'));
+                topLinks.forEach(l => l.classList.remove('active'));
+                const sideLink = document.querySelector(`.sidebar-link[href="#${id}"]`);
+                const topLink  = document.querySelector(`.docs-nav-links a[href="#${id}"]`);
+                if (sideLink) sideLink.classList.add('active');
+                if (topLink)  topLink.classList.add('active');
+            }
+        });
+    }, { threshold: 0.2, rootMargin: '-60px 0px 0px 0px' });
+
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
