@@ -265,8 +265,15 @@
         let chan = null;
         try { chan = new BroadcastChannel('quantum-nova'); } catch (e) { /* fallback CustomEvent uniquement */ }
 
+        // Mémorise le dernier thème émis pour éviter d'émettre deux fois
+        // d'affilée la même valeur — anti-boucle quand panel.js (intégré
+        // dans la même fenêtre) ré-écrit data-theme.
+        let lastEmitted = null;
+
         const emit = () => {
             const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            if (theme === lastEmitted) return;
+            lastEmitted = theme;
             const msg = { type: 'theme-change', theme };
             if (chan) { try { chan.postMessage(msg); } catch (e) {} }
             try { window.dispatchEvent(new CustomEvent('qn-bus', { detail: msg })); } catch (e) {}

@@ -244,7 +244,13 @@
                 if (msg.data) showExportView(msg.data);
                 break;
             case 'theme-change':
-                if (msg.theme) document.documentElement.setAttribute('data-theme', msg.theme);
+                // Garde anti-boucle : setAttribute déclenche le MutationObserver
+                // de menu.js qui réémet theme-change → ré-écoute ici → reset →
+                // RAM saturée en quelques secondes. On ne touche le DOM que si
+                // la valeur change vraiment.
+                if (msg.theme && document.documentElement.getAttribute('data-theme') !== msg.theme) {
+                    document.documentElement.setAttribute('data-theme', msg.theme);
+                }
                 break;
             case 'matrix-show':
                 // Le mode matrice prend la main sur le panneau : titre + ouverture.
