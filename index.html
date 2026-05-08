@@ -1,444 +1,484 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="cyber">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUANTUM-NOVA v5 — Stellar Mathematics Engine</title>
-
+    <title>QUANTUM-NOVA V6 — Station de Calcul Modulaire</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Moteur Mathématique : version 12.4.1 hébergée localement avec SRI.
+         La copie CDN est conservée en commentaire pour référence et fallback
+         manuel si jamais lib/math.min.js est corrompu. -->
+    <script src="lib/math.min.js"
+            integrity="sha384-Q3PTxA/UJ8CgmtdkeyhsM/NPwQTzD8MzAvwQW+BI3zc1T8fdGiePP8VN6D4Sxleg"
+            crossorigin="anonymous"></script>
+    
+    <!-- Styles Globaux -->
+    <link rel="stylesheet" href="style.css"> <!-- On garde la base CSS V5 pour la cohérence -->
+    <link rel="stylesheet" href="core/style-core.css">
+    <link rel="stylesheet" href="onboarding.css">
+    <link rel="stylesheet" href="apps/matrix/style-matrix.css">
+    <link rel="stylesheet" href="apps/algebra/style-algebra.css">
+    <link rel="stylesheet" href="apps/calc/style-calc.css">
+    <link rel="stylesheet" href="apps/graph/style-graph.css">
+    <link rel="stylesheet" href="apps/proba/style-proba.css">
+    <link rel="stylesheet" href="apps/help/style-help.css">
+</head>
+<body class="v6-shell">
 
-    <style>
-        body.widget-mode, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 100vh !important; /* Force la hauteur à celle de la fenêtre */
-            overflow-y: auto !important; /* Active l'ascenseur vertical si besoin */
-            overflow-x: hidden !important; /* Empêche le défilement horizontal indésirable */
-        }
+    <!-- CONTENEUR PRINCIPAL (L'ÉCRAN DE LA CALCULATRICE) -->
+    <div id="app-container" class="workstation">
+        
+        <!-- HEADER / STATUS BAR -->
+        <header class="v6-status-bar">
+            <div class="v6-status-left">
+                <span class="v6-brand">QUANTUM-NOVA <small>v6.0</small></span>
+                <span id="breadcrumb" class="v6-breadcrumb"></span>
+            </div>
+            <div class="v6-status-right">
+                <button id="btn-theme-toggle" class="v6-icon-btn" title="Changer de thème">🌓</button>
+                <button id="btn-export-all" class="v6-icon-btn" title="Exporter le travail">📥</button>
+                <div id="clock">00:00</div>
+            </div>
+        </header>
 
-        /* Stylisation de l'ascenseur pour un rendu "Application native" */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(136, 136, 136, 0.5);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(136, 136, 136, 0.8);
-        }
-    </style>
-    </head>
+        <!-- ZONE DYNAMIQUE (HOME MENU OU APP ACTIVE) -->
+        <main id="view-viewport">
+            <!-- Le contenu sera injecté ici par app-manager.js -->
+        </main>
 
-<body class="widget-mode">
-
-<div class="workstation">
-
-    <div class="brand-header">
-        <div class="brand-logo">QUANTUM&#8209;NOVA</div>
-        <div class="brand-tagline">STELLAR MATHEMATICS ENGINE v5</div>
+        <!-- BARRE D'ACTIONS BASSE (STAY VISIBLE) -->
+        <footer class="v6-footer-nav">
+            <button id="btn-home" class="v6-nav-btn">
+                <span class="icon">🏠</span>
+                <span>HOME</span>
+            </button>
+            <button id="btn-back" class="v6-nav-btn">
+                <span class="icon">⬅</span>
+                <span>BACK</span>
+            </button>
+            <button id="btn-help" class="v6-nav-btn">
+                <span class="icon">❓</span>
+                <span>INFO</span>
+            </button>
+        </footer>
     </div>
 
-    <div class="screen-module">
-        <div class="screen-header">
-            <div class="header-left">
-                <span class="status-led" id="led"></span>
-                <span id="statusText">MOTEUR STELLAR // ACTIF</span>
-            </div>
-            <div class="header-right">
-                <span id="angleModeLabel">RAD</span>
-                <span id="coordsText">X: ─── | Y: ───</span>
-            </div>
-        </div>
-
-        <div class="canvas-container" id="canvasContainer">
-            <canvas id="mathCanvas"></canvas>
-            <div class="console-overlay">
-                <div class="input-row">
-                    <span class="prompt-symbol">❯</span>
-                    <input type="text" id="screen" class="input-screen" placeholder="f(x)=sin(x)   |   aide   |   popup" autocomplete="off" spellcheck="false" aria-label="Champ de saisie mathématique">
-                </div>
-            </div>
-        </div>
-
-        <div class="function-legend" id="functionLegend">
-            <span class="legend-empty" id="legendEmpty">Aucune fonction tracée — Entrez f(x)=sin(x) puis ⏎</span>
-        </div>
-    </div>
-
-    <div class="log-module collapsed" id="logModule">
-        <button type="button" class="log-header" id="logHeader" onclick="toggleLog()" aria-expanded="false" title="Afficher / masquer l'historique des commandes">
-            <span class="log-header-left">
-                <span class="log-chevron" id="logChevron">▼</span>
-                <span class="log-title">Historique</span>
-                <span class="log-count" id="logCount">0</span>
-            </span>
-            <span class="log-header-hint">cliquer pour dérouler</span>
-        </button>
-        <div id="historyLog" class="history-log"></div>
-    </div>
-
-    <div class="resize-handle" id="resizeHandle" role="separator" aria-orientation="horizontal" aria-label="Redimensionner l'écran graphique" title="Glisser pour ajuster la hauteur de l'écran"></div>
-
-    <div class="keyboard-module">
-        <div class="system-keys">
-            <button class="key key-sys" onclick="ouvrirModal('catalogModal')" title="Ouvrir le catalogue de symboles" style="color:var(--text-neon); font-weight:800; box-shadow: 0 0 10px rgba(122,162,247,0.2)">Ω CAT.</button>
-            <button class="key key-sys" onclick="window.open('docs.html', '_blank', 'noopener')" title="Ouvrir la documentation complète dans un nouvel onglet">📖 DOC</button>
-            <select class="key key-sys key-sys-select" id="themeSelect" onchange="setTheme(this.value)" title="Changer le thème visuel" aria-label="Sélection du thème">
-                </select>
-            <button class="key key-sys" id="kbdProfileBtn" onclick="cycleKeyboardProfile()" title="Changer le profil clavier physique (cycle rapide). Pour un choix précis, ouvrez 📖 DOC > onglet Clavier.">⌨ KBD</button>
-            <button class="key key-sys" onclick="exportPNG()" title="Exporter le graphe courant en PNG haute résolution">📸 EXP</button>
-            <button class="key key-sys" onclick="shareStateURL()" title="Copier dans le presse-papier une URL contenant l'état actuel (fonctions, variables, thème, vue)">🔗 SHARE</button>
-            <button class="key key-sys" id="analyseBtn" onclick="setAnalyse(!analyseEnabled)" title="Lance le détecteur de racines et intersections">🔍 ANA</button>
-            <button class="key key-sys" id="limModeBtn" onclick="setLimMode(!limModeEnabled)" title="Mode LIM : cliquer pour activer, puis cliquer sur le graphe pour poser une limite">Δ LIM</button>
-            <button class="key key-sys" onclick="effacerLimites()" title="Effacer tous les marqueurs de limites">🗑️ LIM</button>
-            <button class="key key-sys" onclick="resetVue()" title="Centrer le graphe : reset X à [-10,10] puis auto-fit Y">⌂ VUE</button>
-            <button class="key key-sys" onclick="effacerGraphe()" title="Effacer les courbes">🗑️ GRF</button>
-            <button class="key key-sys key-angle" id="angleModeBtn" onclick="toggleAngleMode()" title="Basculer Radians/Degrés">RAD</button>
-            <button class="key key-sys key-clear-all" onclick="purgerMemoire()" title="Effacer TOUTE la mémoire">⚡ RAM</button>
-        </div>
-
-        <div class="main-grid">
-            <button class="key key-mem" onclick="inserer('f(x)=')" title="Déclarer f(x)=">f(x)=</button>
-            <button class="key key-mem" onclick="inserer('g(x)=')" title="Déclarer g(x)=">g(x)=</button>
-            <button class="key key-mem" onclick="inserer('cX')" title="Insérer coordonnée X capturée">cX</button>
-            <button class="key key-mem" onclick="inserer('cY')" title="Insérer coordonnée Y capturée">cY</button>
-            <button class="key key-clear" onclick="effacerEntree()" title="Effacer la saisie [Échap]">CE</button>
-
-            <button class="key key-sci" onclick="inserer('asin(')" title="Arc sinus">arcsin</button>
-            <button class="key key-sci" onclick="inserer('acos(')" title="Arc cosinus">arccos</button>
-            <button class="key key-sci" onclick="inserer('atan(')" title="Arc tangente">arctan</button>
-            <button class="key key-sci" onclick="inserer('sinh(')" title="Sinus hyperbolique">sinh</button>
-            <button class="key key-sci" onclick="inserer('cosh(')" title="Cosinus hyperbolique">cosh</button>
-
-            <button class="key key-sci" onclick="inserer('derivative(')" title="Dérivée symbolique">d/dx</button>
-            <button class="key key-sci" onclick="promptShade()" title="Ombrage d'intégrale : remplit l'aire sous la courbe entre deux bornes">∫ a→b</button>
-            <button class="key key-sci" onclick="inserer('log(')" title="Logarithme naturel (ln)">ln</button>
-            <button class="key key-sci" onclick="inserer('abs(')" title="Valeur absolue">|x|</button>
-            <button class="key key-sci" onclick="inserer('!')" title="Factorielle">n!</button>
-
-            <button class="key key-sci" onclick="inserer('sin(')" title="Sinus">sin</button>
-            <button class="key key-sci" onclick="inserer('cos(')" title="Cosinus">cos</button>
-            <button class="key key-sci" onclick="inserer('tan(')" title="Tangente">tan</button>
-            <button class="key key-sci" onclick="inserer('sqrt(')" title="Racine carrée">√</button>
-            <button class="key key-sci" onclick="inserer('^2')" title="Élever au carré">x²</button>
-
-            <button class="key key-sci" onclick="inserer('floor(')" title="Partie entière inférieure (arrondi vers le bas)">floor(x)</button>
-            <button class="key key-sci" onclick="inserer('ceil(')" title="Partie entière supérieure (arrondi vers le haut)">ceil(x)</button>
-            <button class="key key-sci" onclick="inserer('round(')" title="Arrondi à l'entier le plus proche">round</button>
-            <button class="key key-sci" onclick="inserer('mod(')" title="Modulo : mod(a, b) = reste de la division de a par b">mod</button>
-            <button class="key key-sci" onclick="inserer('^')" title="Puissance : x^n">xⁿ</button>
-
-            <button class="key key-sci" onclick="inserer('tanh(')" title="Tangente hyperbolique">tanh</button>
-            <button class="key key-sci" onclick="inserer('exp(')" title="Exponentielle e^x — équivalent à e^x">exp</button>
-            <button class="key key-sci" onclick="inserer('^3')" title="Élever au cube">x³</button>
-            <button class="key key-sci" onclick="inserer('cbrt(')" title="Racine cubique">∛</button>
-            <button class="key key-sci" onclick="inserer('nthRoot(')" title="Racine n-ième : nthRoot(x, n)">ⁿ√x</button>
-
-            <button class="key key-sci" onclick="inserer('pi')" title="Constante π">π</button>
-            <button class="key key-num" onclick="inserer('7')">7</button>
-            <button class="key key-num" onclick="inserer('8')">8</button>
-            <button class="key key-num" onclick="inserer('9')">9</button>
-            <button class="key key-op"  onclick="inserer('/')" title="Division">÷</button>
-
-            <button class="key key-sci" onclick="inserer('e')" title="Constante e">e</button>
-            <button class="key key-num" onclick="inserer('4')">4</button>
-            <button class="key key-num" onclick="inserer('5')">5</button>
-            <button class="key key-num" onclick="inserer('6')">6</button>
-            <button class="key key-op"  onclick="inserer('*')" title="Multiplication">×</button>
-
-            <button class="key key-sci" onclick="inserer('(')">(</button>
-            <button class="key key-num" onclick="inserer('1')">1</button>
-            <button class="key key-num" onclick="inserer('2')">2</button>
-            <button class="key key-num" onclick="inserer('3')">3</button>
-            <button class="key key-op"  onclick="inserer('-')">−</button>
-
-            <button class="key key-sci" onclick="inserer(')')">)</button>
-            <button class="key key-num" onclick="inserer('0')">0</button>
-            <button class="key key-num" onclick="inserer('.')">.</button>
-            <button class="key key-sci key-x" onclick="inserer('x')" title="Variable X">X</button>
-            <button class="key key-op"  onclick="inserer('+')">+</button>
-
-            <button class="key key-sci" onclick="inserer(',')" title="Séparateur d'argument">,</button>
-            <button class="key key-sci" onclick="inserer('=')" title="Assignation">=</button>
-            <button class="key key-act col-3" onclick="executer()" title="Évaluer ou tracer [Entrée]">ÉVALUER / TRACER &nbsp;⏎</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="catalogModal" role="dialog" aria-modal="true">
-    <div class="modal-content">
-        <button class="close-btn" onclick="fermerModal('catalogModal')">✕ FERMER</button>
-        <h1>Ω Catalogue des Symboles</h1>
-        <p>Cliquez sur une fonction pour l'injecter directement dans la console.</p>
-
-        <div class="catalog-grid">
-            <div class="catalog-category">
-                <h3>Calcul Analytique</h3>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('derivative(', 'catalogModal')">
-                    <span class="cat-visual">d/dx (Dérivée)</span><span class="cat-code">derivative(expr, x)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('integral(', 'catalogModal')">
-                    <span class="cat-visual">∫ (Intégrale N.)</span><span class="cat-code">integral(expr, x)</span>
-                </div>
+    <!-- TEMPLATES DES APPLICATIONS (Injection rapide sans rechargement) -->
+    
+    <!-- Template : MENU D'ACCUEIL -->
+    <template id="tpl-home">
+        <div class="qn-home-menu">
+            <header class="qn-home-header">
+                <h2>SYSTEM OS v6.0</h2>
+                <p>Select application module</p>
+            </header>
+            <div class="qn-launcher-grid">
+                <button class="qn-launch-card" data-app="calc">
+                    <span class="icon">🔢</span>
+                    <span class="title">Calculus</span>
+                </button>
+                <button class="qn-launch-card" data-app="graph">
+                    <span class="icon">📈</span>
+                    <span class="title">Graphing</span>
+                </button>
+                <button class="qn-launch-card" data-app="matrix">
+                    <span class="icon">🔲</span>
+                    <span class="title">Matrices</span>
+                </button>
+                <button class="qn-launch-card" data-app="algebra">
+                    <span class="icon">∆</span>
+                    <span class="title">Algebra</span>
+                </button>
+                <button class="qn-launch-card" data-app="proba">
+                    <span class="icon">🎲</span>
+                    <span class="title">Stats</span>
+                </button>
             </div>
 
-            <div class="catalog-category">
-                <h3>Matrices & Algèbre</h3>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('det(', 'catalogModal')">
-                    <span class="cat-visual">|A| (Déterminant)</span><span class="cat-code">det(matrix)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('inv(', 'catalogModal')">
-                    <span class="cat-visual">A⁻¹ (Inverse)</span><span class="cat-code">inv(matrix)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('cross(', 'catalogModal')">
-                    <span class="cat-visual">u ∧ v (Produit vectoriel)</span><span class="cat-code">cross(v1, v2)</span>
-                </div>
-            </div>
-
-            <div class="catalog-category">
-                <h3>Statistiques</h3>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('mean(', 'catalogModal')">
-                    <span class="cat-visual">x̄ (Moyenne)</span><span class="cat-code">mean(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('std(', 'catalogModal')">
-                    <span class="cat-visual">σ (Ecart-type)</span><span class="cat-code">std(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('var(', 'catalogModal')">
-                    <span class="cat-visual">σ² (Variance)</span><span class="cat-code">var(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('median(', 'catalogModal')">
-                    <span class="cat-visual">x̃ (Médiane)</span><span class="cat-code">median(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('mode(', 'catalogModal')">
-                    <span class="cat-visual">Mo (Mode)</span><span class="cat-code">mode(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('sum(', 'catalogModal')">
-                    <span class="cat-visual">Σ (Somme)</span><span class="cat-code">sum(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('prod(', 'catalogModal')">
-                    <span class="cat-visual">Π (Produit)</span><span class="cat-code">prod(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('min(', 'catalogModal')">
-                    <span class="cat-visual">min (Minimum)</span><span class="cat-code">min(a, b...)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('max(', 'catalogModal')">
-                    <span class="cat-visual">max (Maximum)</span><span class="cat-code">max(a, b...)</span>
-                </div>
-            </div>
-
-            <div class="catalog-category">
-                <h3>Combinatoire &amp; Théorie des nombres</h3>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('combinations(', 'catalogModal')">
-                    <span class="cat-visual">C(n,k) (Combinaisons)</span><span class="cat-code">combinations(n, k)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('permutations(', 'catalogModal')">
-                    <span class="cat-visual">P(n,k) (Arrangements)</span><span class="cat-code">permutations(n, k)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('factorial(', 'catalogModal')">
-                    <span class="cat-visual">n! (Factorielle)</span><span class="cat-code">factorial(n)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('gcd(', 'catalogModal')">
-                    <span class="cat-visual">PGCD</span><span class="cat-code">gcd(a, b)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('lcm(', 'catalogModal')">
-                    <span class="cat-visual">PPCM</span><span class="cat-code">lcm(a, b)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('isPrime(', 'catalogModal')">
-                    <span class="cat-visual">Test de primalité</span><span class="cat-code">isPrime(n)</span>
-                </div>
-            </div>
-
-            <div class="catalog-category">
-                <h3>Nombres complexes</h3>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('complex(', 'catalogModal')">
-                    <span class="cat-visual">a + bi</span><span class="cat-code">complex(a, b)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('re(', 'catalogModal')">
-                    <span class="cat-visual">Re(z)</span><span class="cat-code">re(z)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('im(', 'catalogModal')">
-                    <span class="cat-visual">Im(z)</span><span class="cat-code">im(z)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('abs(', 'catalogModal')">
-                    <span class="cat-visual">|z| (Module)</span><span class="cat-code">abs(z)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('arg(', 'catalogModal')">
-                    <span class="cat-visual">arg(z) (Argument)</span><span class="cat-code">arg(z)</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('conj(', 'catalogModal')">
-                    <span class="cat-visual">z̄ (Conjugué)</span><span class="cat-code">conj(z)</span>
-                </div>
-            </div>
-
-            <div class="catalog-category">
-                <h3>Constantes &amp; conversions</h3>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('pi', 'catalogModal')">
-                    <span class="cat-visual">π ≈ 3.14159…</span><span class="cat-code">pi</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('e', 'catalogModal')">
-                    <span class="cat-visual">e ≈ 2.71828…</span><span class="cat-code">e</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('phi', 'catalogModal')">
-                    <span class="cat-visual">φ (Nombre d'or)</span><span class="cat-code">phi</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('tau', 'catalogModal')">
-                    <span class="cat-visual">τ = 2π</span><span class="cat-code">tau</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('Infinity', 'catalogModal')">
-                    <span class="cat-visual">∞</span><span class="cat-code">Infinity</span>
-                </div>
-                <div class="catalog-item" onclick="insererDepuisCatalogue('i', 'catalogModal')">
-                    <span class="cat-visual">i (Imaginaire)</span><span class="cat-code">i</span>
+            <!-- Exemples rapides -->
+            <div class="qn-examples-section" style="margin-top: 30px; border-top: 1px solid var(--v6-border); padding-top: 20px;">
+                <span style="font-size: 0.6rem; color: #444; letter-spacing: 2px; text-transform: uppercase;">Quick Launch Samples</span>
+                <div id="exampleList" class="qn-example-list" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                    <!-- Injecté par onboarding.js -->
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </template>
 
-<div class="modal-overlay" id="manualModal" role="dialog" aria-modal="true" aria-label="Documentation QUANTUM-NOVA">
-    <div class="modal-content">
-        <button class="close-btn" onclick="fermerModal('manualModal')" title="Fermer [Échap]">✕ FERMER</button>
-        <h1>📖 QUANTUM-NOVA — Documentation</h1>
+    <!-- Template : APPLICATION MATRICE -->
+    <template id="tpl-matrix">
+        <div class="app-matrix-container">
+            <header class="app-header">
+                <h3 style="text-align: center; color: var(--v6-accent); letter-spacing: 2px;">MATRICES</h3>
+            </header>
 
-        <div class="tab-bar" role="tablist">
-            <button class="tab-btn active" onclick="changerOnglet(0, this)" role="tab">🚀 Démarrage</button>
-            <button class="tab-btn"        onclick="changerOnglet(1, this)" role="tab">📐 Fonctions</button>
-            <button class="tab-btn"        onclick="changerOnglet(2, this)" role="tab">📈 Grapheur</button>
-            <button class="tab-btn"        onclick="changerOnglet(3, this)" role="tab">⌨️ Raccourcis</button>
-            <button class="tab-btn"        onclick="changerOnglet(4, this)" role="tab">🎨 Thèmes</button>
-            <button class="tab-btn"        onclick="changerOnglet(5, this)" role="tab">⌨ Clavier physique</button>
-            <button class="tab-btn"        onclick="changerOnglet(6, this)" role="tab">⚡ Console</button>
+            <!-- Configuration de la matrice A -->
+            <section class="matrix-setup">
+                <div class="dim-controls">
+                    <span>Matrice A :</span>
+                    <input type="number" id="matrix-a-rows" value="3" min="1" max="8" inputmode="numeric">
+                    <span>x</span>
+                    <input type="number" id="matrix-a-cols" value="3" min="1" max="8" inputmode="numeric">
+                    <button id="matrix-gen-a" class="btn-gen">GÉNÉRER</button>
+                </div>
+                <div id="matrix-grid-a" class="matrix-grid-wrapper">
+                    <!-- Grille générée ici -->
+                </div>
+            </section>
+
+            <!-- Configuration de la matrice B -->
+            <section class="matrix-setup">
+                <div class="dim-controls">
+                    <span>Matrice B :</span>
+                    <input type="number" id="matrix-b-rows" value="3" min="1" max="8" inputmode="numeric">
+                    <span>x</span>
+                    <input type="number" id="matrix-b-cols" value="3" min="1" max="8" inputmode="numeric">
+                    <button id="matrix-gen-b" class="btn-gen">GÉNÉRER</button>
+                </div>
+                <div id="matrix-grid-b" class="matrix-grid-wrapper">
+                    <!-- Grille générée ici -->
+                </div>
+            </section>
+
+            <!-- Opérations unaires sur A -->
+            <section class="matrix-toolbar">
+                <button class="matrix-op-btn" data-op="det" title="Déterminant de A">DET(A)</button>
+                <button class="matrix-op-btn" data-op="inv" title="Inverse de A">INV(A)</button>
+                <button class="matrix-op-btn" data-op="trans" title="Transposée de A">A&#7488;</button>
+                <button class="matrix-op-btn" data-op="trace" title="Trace de A">TR(A)</button>
+            </section>
+
+            <!-- Opérations binaires A ∘ B -->
+            <section class="matrix-toolbar">
+                <button class="matrix-op-btn" data-op="add" title="Somme A+B">A + B</button>
+                <button class="matrix-op-btn" data-op="sub" title="Différence A-B">A − B</button>
+                <button class="matrix-op-btn" data-op="mul" title="Produit matriciel A×B">A × B</button>
+            </section>
+
+            <!-- Pivot de Gauss : RREF + résolution de systèmes linéaires -->
+            <section class="matrix-toolbar matrix-gauss-toolbar">
+                <button class="matrix-op-btn" data-op="rref" title="Forme échelonnée réduite de A">RREF(A)</button>
+                <button class="matrix-op-btn" data-op="solve" title="Résout le système : A est traitée comme [M | b], dernière colonne = second membre">RÉSOUDRE A·x = b</button>
+                <label class="matrix-gauss-toggle">
+                    <input type="checkbox" id="matrix-show-steps" checked>
+                    <span>Afficher les étapes</span>
+                </label>
+            </section>
+
+            <!-- Zone de résultat -->
+            <section id="matrix-result-output">
+                <div class="placeholder">En attente de calcul...</div>
+            </section>
         </div>
+    </template>
 
-        <div class="tab-panel active" id="tab0" role="tabpanel">
-            <div class="doc-box">
-                <strong>Bienvenue dans QUANTUM-NOVA v5</strong><br>
-                Un environnement de calcul scientifique unifié : évaluation numérique, calcul symbolique et tracé interactif.
-            </div>
-            <h2 style="color:var(--text-error);">Nouveauté : Capture Spatiale (Click-to-fetch)</h2>
-            <p>Cliquez n'importe où sur le graphe. Le système placera un réticule et sauvegardera les coordonnées exactes sous les variables <code>cX</code> et <code>cY</code>. Tapez ensuite <code>f(cX)</code> dans la console pour utiliser ce point !</p>
+    <!-- Template : APPLICATION ALGÈBRE (Calcul formel) -->
+    <template id="tpl-algebra">
+        <div class="app-algebra-container">
+            <header class="app-header">
+                <h3 style="text-align: center; color: var(--v6-accent); letter-spacing: 2px;">ALGÈBRE SYMBOLIQUE</h3>
+            </header>
 
-            <h2>Calcul Numérique & Variables</h2>
-            <ul>
-                <li><code>2^10</code> → <em>1024</em></li>
-                <li><code>a = 3</code> → stocke 3 sous le nom <em>a</em></li>
-            </ul>
-
-            <h2>Tracer une Fonction</h2>
-            <ul>
-                <li><strong>Méthode nommée :</strong> <code>f(x) = a * sin(x)</code></li>
-                <li><strong>Tracé rapide :</strong> <code>x^2 - 3*x + 2</code></li>
-            </ul>
-            <p><br><a href="docs.html" target="_blank" style="color:var(--text-neon);">Ouvrir la documentation complète dans un nouvel onglet →</a></p>
-        </div>
-
-        <div class="tab-panel" id="tab1" role="tabpanel">
-            <h2>Fonctions et Symboles (Ω)</h2>
-            <p>Utilisez le bouton <strong>Ω CAT.</strong> pour ouvrir le catalogue interactif complet des fonctions avancées (dérivées, matrices, probabilités).</p>
-            <p>Le mode angulaire (bouton <strong>RAD/DEG</strong>) s'applique à toutes les fonctions trigonométriques.</p>
-        </div>
-
-        <div class="tab-panel" id="tab2" role="tabpanel">
-            <h2>Navigation sur le Graphe</h2>
-            <ul>
-                <li><strong>Panoramique :</strong> Cliquer-glisser (souris) ou glisser à 1 doigt (tactile).</li>
-                <li><strong>Zoom Dynamique :</strong> Molette centrée sur le curseur, ou pincement à 2 doigts.</li>
-                <li><strong>Ciblage :</strong> Un clic simple pose un marqueur rouge et enregistre les variables <code>cX</code> / <code>cY</code>.</li>
-            </ul>
-        </div>
-
-        <div class="tab-panel" id="tab3" role="tabpanel">
-            <h2>Raccourcis Clavier</h2>
-            <div class="shortcut-grid">
-                <div class="shortcut-item"><kbd>Entrée</kbd><span>Évaluer / Tracer</span></div>
-                <div class="shortcut-item"><kbd>Échap</kbd><span>Effacer / Fermer Modal</span></div>
-                <div class="shortcut-item"><kbd>↑</kbd><span>Historique (Précédent)</span></div>
-                <div class="shortcut-item"><kbd>↓</kbd><span>Historique (Suivant)</span></div>
-                <div class="shortcut-item"><kbd>²</kbd><span>Insère <code>^2</code> (AZERTY)</span></div>
-                <div class="shortcut-item"><kbd>³</kbd><span>Insère <code>^3</code> (AltGr+²)</span></div>
-                <div class="shortcut-item"><kbd>×</kbd><span>Insère <code>*</code></span></div>
-                <div class="shortcut-item"><kbd>÷</kbd><span>Insère <code>/</code></span></div>
-                <div class="shortcut-item"><kbd>π</kbd><span>Insère <code>pi</code></span></div>
-                <div class="shortcut-item"><kbd>√</kbd><span>Insère <code>sqrt(</code></span></div>
-            </div>
-            <p style="margin-top:14px; font-size:0.85rem;">Pour la liste complète et la sélection du profil clavier physique, voir l'onglet <strong>⌨ Clavier physique</strong>.</p>
-        </div>
-
-        <div class="tab-panel" id="tab4" role="tabpanel">
-            <h2 style="margin-top:0">🎨 Thèmes visuels</h2>
-            <p>QUANTUM-NOVA propose 4 thèmes interchangeables, accessible via le <strong>menu déroulant de la barre système</strong> (en haut du clavier). Le thème actif est automatiquement mémorisé et restauré à la prochaine ouverture.</p>
-            <ul style="line-height:2.2">
-                <li>☀️ <strong>E-Ink Light</strong> <em>(défaut)</em> — haute lisibilité diurne, idéal pour intégration sidebar sur pages web claires et impression</li>
-                <li>🌑 <strong>Cyber Dark</strong> — esthétique Tokyo Night, travail nocturne prolongé</li>
-                <li>📟 <strong>Phosphor Matrix</strong> — terminal rétro vert sur noir, nostalgie VT100</li>
-                <li>🌈 <strong>Neon Plasma</strong> — fusion cyberpunk magenta/cyan pour présentations</li>
-            </ul>
-            <div class="doc-box success">
-                Le choix du thème est persisté dans <code>localStorage</code> sous la clé <code>qn:theme</code>. Aucune configuration nécessaire — vos préférences suivent automatiquement entre sessions.
-            </div>
-        </div>
-
-        <div class="tab-panel" id="tab5" role="tabpanel">
-            <h2 style="margin-top:0">⌨ Clavier physique &amp; Profils de saisie</h2>
-            <div class="doc-box">
-                QUANTUM-NOVA reconnaît les caractères mathématiques Unicode tapés directement au clavier physique et les convertit automatiquement en syntaxe ASCII compréhensible par le moteur math.js. Selon votre disposition de clavier, certains symboles sont accessibles en touche directe (par exemple <code>²</code> sur AZERTY belge, à gauche du <code>&amp;</code>) — taper cette touche après un <code>x</code> insère donc directement <code>x^2</code>.
-            </div>
-
-            <h2>Profil clavier actif</h2>
-            <p>Au démarrage, QUANTUM-NOVA tente de deviner votre disposition à partir de la langue de votre navigateur. Vous pouvez surcharger ce choix manuellement ci-dessous : votre sélection sera mémorisée et restaurée lors des prochaines visites.</p>
-
-            <div style="display:flex; align-items:center; gap:14px; margin:18px 0; flex-wrap:wrap;">
-                <label for="kbdProfileSelect" style="color:var(--text-dim); font-size:0.85rem; letter-spacing:1px; text-transform:uppercase;">Profil :</label>
-                <select id="kbdProfileSelect"
-                        onchange="setKeyboardProfile(this.value)"
-                        style="background:var(--key-sys-bg); color:var(--text-main); border:1px solid var(--text-neon); padding:10px 14px; border-radius:8px; font-family:'JetBrains Mono', monospace; font-size:0.9rem; cursor:pointer; min-width:280px;">
+            <div class="algebra-input-group">
+                <input type="text" id="algebra-input" class="algebra-field" placeholder="Ex: x^2 + 2x + 1" autofocus>
+                
+                <div class="algebra-controls">
+                    <select id="algebra-mode">
+                        <option value="derive">DÉRIVER (d/dx)</option>
+                        <option value="simplify">SIMPLIFIER</option>
+                        <option value="rationalize">FORME RATIONNELLE</option>
+                        <option value="eval">ÉVALUER</option>
                     </select>
-                <button class="key key-sys" style="padding:10px 16px; font-size:0.78rem;" onclick="cycleKeyboardProfile()" title="Cycle rapide vers le profil suivant">⌨ Cycle</button>
+                    <button id="algebra-execute">CALCULER</button>
+                </div>
             </div>
 
-            <div id="kbdProfileDescription" class="doc-box success" style="font-size:0.85rem;">
+            <div class="algebra-tools">
+                <button class="algebra-quick-fn" data-fn="sin">sin(x)</button>
+                <button class="algebra-quick-fn" data-fn="cos">cos(x)</button>
+                <button class="algebra-quick-fn" data-fn="log">log(x)</button>
+                <button class="algebra-quick-fn" data-fn="sqrt">sqrt(x)</button>
+                <button class="algebra-quick-fn" data-fn="exp">exp(x)</button>
+                <button class="algebra-quick-fn" data-fn="abs">abs(x)</button>
+            </div>
+
+            <div id="algebra-result-display">
+                <div class="placeholder" style="text-align: center; opacity: 0.5; font-size: 0.8rem;">
+                    Entrez une expression pour commencer.
                 </div>
-
-            <h2>Symboles Unicode reconnus (profil universel)</h2>
-            <p>Tous les profils héritent de cette table de base. Ces caractères sont reconnus quel que soit le clavier physique, à condition qu'ils arrivent dans le champ de saisie (touche directe, AltGr, charmap, copier-coller depuis une page web, etc.).</p>
-
-            <table class="func-table" style="width:100%; margin-top:14px;">
-                <thead>
-                    <tr><th>Caractère</th><th>Sens</th><th>Conversion math.js</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><code>²</code> <code>³</code> <code>⁴</code>…<code>⁹</code></td><td>Exposants Unicode</td><td><code>^2</code>, <code>^3</code>, <code>^4</code>…<code>^9</code></td></tr>
-                    <tr><td><code>×</code> <code>·</code></td><td>Multiplication</td><td><code>*</code></td></tr>
-                    <tr><td><code>÷</code></td><td>Division</td><td><code>/</code></td></tr>
-                    <tr><td><code>−</code> <code>–</code> <code>—</code></td><td>Tirets typographiques</td><td><code>-</code></td></tr>
-                    <tr><td><code>π</code> <code>τ</code> <code>φ</code> <code>∞</code></td><td>Constantes</td><td><code>pi</code>, <code>tau</code>, <code>phi</code>, <code>Infinity</code></td></tr>
-                    <tr><td><code>√</code> <code>∛</code></td><td>Racines</td><td><code>sqrt(</code>, <code>cbrt(</code></td></tr>
-                    <tr><td><code>≤</code> <code>≥</code> <code>≠</code> <code>≈</code></td><td>Comparateurs</td><td><code>&lt;=</code>, <code>&gt;=</code>, <code>!=</code>, <code>==</code></td></tr>
-                    <tr><td><code>∑</code> <code>∏</code></td><td>Réducteurs</td><td><code>sum(</code>, <code>prod(</code></td></tr>
-                </tbody>
-            </table>
-
-            <h2>Spécificités AZERTY (profils 🇧🇪 BE et 🇫🇷 FR)</h2>
-            <p>Sur les claviers AZERTY belge et français, la touche <code>^</code> (à droite du <code>p</code>) est une <strong>touche morte</strong> par défaut : taper <code>^</code> ne produit rien tant qu'on n'a pas tapé une lettre derrière (â, ê, î…). Pour les mathématiques, c'est pénalisant — on veut taper <code>x^2</code> sans devoir faire <code>^</code> + espace.</p>
-            <p>Les profils <strong>BE</strong> et <strong>FR</strong> interceptent cette touche morte et insèrent <code>^</code> immédiatement, sans attendre la lettre suivante.</p>
-
-            <div class="doc-box warning">
-                <strong>Astuce :</strong> Le bouton <strong>⌨ KBD</strong> de la barre supérieure du clavier permet de cycler rapidement entre les profils sans ouvrir cette documentation. Le profil actif est toujours visible dans son libellé (au survol).
             </div>
         </div>
-    </div>
-</div>
+    </template>
 
-<script src="ui.js"></script>
-<script src="engine.js"></script>
+    <!-- Template : APPLICATION CALCUL STANDARD -->
+    <template id="tpl-calc">
+        <div class="app-calc-container">
+            <section class="calc-screen-module">
+                <div id="calc-history-list"></div>
+                <input type="text" id="calc-display" class="qn-copyable" value="0" readonly title="Cliquer pour copier le résultat">
+            </section>
 
+            <section class="calc-keyboard">
+                <!-- Ligne 1 -->
+                <button class="calc-btn action" data-action="clear">AC</button>
+                <button class="calc-btn action" data-action="backspace">DEL</button>
+                <button class="calc-btn op" data-val="^">^</button>
+                <button class="calc-btn op" data-val="/">÷</button>
+
+                <!-- Ligne 2 -->
+                <button class="calc-btn" data-val="7">7</button>
+                <button class="calc-btn" data-val="8">8</button>
+                <button class="calc-btn" data-val="9">9</button>
+                <button class="calc-btn op" data-val="*">×</button>
+
+                <!-- Ligne 3 -->
+                <button class="calc-btn" data-val="4">4</button>
+                <button class="calc-btn" data-val="5">5</button>
+                <button class="calc-btn" data-val="6">6</button>
+                <button class="calc-btn op" data-val="-">−</button>
+
+                <!-- Ligne 4 -->
+                <button class="calc-btn" data-val="1">1</button>
+                <button class="calc-btn" data-val="2">2</button>
+                <button class="calc-btn" data-val="3">3</button>
+                <button class="calc-btn op" data-val="+">+</button>
+
+                <!-- Ligne 5 -->
+                <button class="calc-btn" data-val="0">0</button>
+                <button class="calc-btn" data-val=".">.</button>
+                <button class="calc-btn action" data-action="ans">ANS</button>
+                <button class="calc-btn equals" data-action="evaluate">=</button>
+            </section>
+        </div>
+    </template>
+
+    <!-- Template : APPLICATION GRAPHEUR (Moteur V5) -->
+    <template id="tpl-graph">
+        <div class="app-graph-container">
+            <!-- Zone Graphe -->
+            <div id="canvasContainer">
+                <canvas id="mathCanvas"></canvas>
+                <div id="led" class="led"></div>
+                <div id="statusText" class="status-text">PRÊT</div>
+            </div>
+
+            <!-- Contrôles et Saisie -->
+            <section class="graph-controls">
+                <div class="graph-info-bar">
+                    <span id="coordsText">X: 0.00 | Y: 0.00</span>
+                    <div class="graph-btns">
+                        <button id="angleModeBtn" class="g-btn" onclick="toggleAngleMode()">RAD</button>
+                        <button class="g-btn" onclick="resetVue()">⌂ VUE</button>
+                        <button class="g-btn" onclick="effacerGraphe()">🗑 VIDER</button>
+                    </div>
+                </div>
+                
+                <div class="graph-input-row">
+                    <input type="text" id="screen" placeholder="f(x)=sin(x)" autofocus>
+                </div>
+                
+                <div id="historyLog" class="graph-log"></div>
+            </section>
+
+            <!-- Légende cachée par défaut mais accessible par ui.js -->
+            <div id="functionLegend" style="display: none;"></div>
+        </div>
+    </template>
+
+    <!-- Template : APPLICATION STATS / PROBA -->
+    <template id="tpl-proba">
+        <div class="app-proba-container">
+            <header class="app-header">
+                <h3 style="text-align: center; color: var(--v6-accent); letter-spacing: 2px;">STATS & PROBABILITÉS</h3>
+            </header>
+
+            <!-- Section Stats Descriptives -->
+            <section class="proba-section">
+                <h4>📊 Statistiques Descriptives</h4>
+                <div class="proba-input-row">
+                    <input type="text" id="proba-stats-input" class="proba-field" placeholder="Série: 12, 15, 10, 19...">
+                    <button id="proba-calc-stats" class="proba-btn">CALCULER</button>
+                </div>
+                <div id="proba-res-stats">
+                    <div class="placeholder" style="font-size: 0.7rem; opacity: 0.5;">Entrez des nombres séparés par des virgules.</div>
+                </div>
+            </section>
+
+            <!-- Section Combinatoire -->
+            <section class="proba-section">
+                <h4>🎲 Combinatoire (n, k)</h4>
+                <div class="proba-input-row">
+                    <input type="number" id="proba-n" class="proba-field short" placeholder="n" value="10" inputmode="numeric">
+                    <input type="number" id="proba-k" class="proba-field short" placeholder="k" value="2" inputmode="numeric">
+                    <button id="proba-calc-comb" class="proba-btn">COMBINATOIRE</button>
+                </div>
+                <div id="proba-res-comb">
+                    <div class="placeholder" style="font-size: 0.7rem; opacity: 0.5;">Calcule n!, nCr et nPr.</div>
+                </div>
+            </section>
+
+            <!-- Section Loi Binomiale -->
+            <section class="proba-section">
+                <h4>📐 Loi Binomiale B(n, p)</h4>
+                <div class="proba-input-row">
+                    <input type="number" id="proba-bin-n" class="proba-field short" placeholder="n" value="10" inputmode="numeric">
+                    <input type="number" id="proba-bin-k" class="proba-field short" placeholder="k" value="3" inputmode="numeric">
+                    <input type="number" id="proba-bin-p" class="proba-field short" placeholder="p" value="0.5" step="0.01" min="0" max="1" inputmode="decimal">
+                    <button id="proba-calc-bin" class="proba-btn">CALCULER</button>
+                </div>
+                <div id="proba-res-bin">
+                    <div class="placeholder" style="font-size: 0.7rem; opacity: 0.5;">P(X=k), P(X≤k), espérance, variance.</div>
+                </div>
+            </section>
+
+            <!-- Section Loi Normale (densité) -->
+            <section class="proba-section">
+                <h4>🔔 Loi Normale N(μ, σ)</h4>
+                <div class="proba-input-row">
+                    <input type="number" id="proba-norm-mu" class="proba-field short" placeholder="μ" value="0" step="0.1" inputmode="decimal">
+                    <input type="number" id="proba-norm-sigma" class="proba-field short" placeholder="σ" value="1" step="0.1" min="0.0001" inputmode="decimal">
+                    <input type="number" id="proba-norm-x" class="proba-field short" placeholder="x" value="1" step="0.1" inputmode="decimal">
+                    <button id="proba-calc-norm" class="proba-btn">CALCULER</button>
+                </div>
+                <div id="proba-res-norm">
+                    <div class="placeholder" style="font-size: 0.7rem; opacity: 0.5;">Densité f(x) et P(X≤x) au point x.</div>
+                </div>
+            </section>
+        </div>
+    </template>
+
+    <!-- Template : CENTRE D'AIDE (Manuel V6) -->
+    <template id="tpl-help">
+        <div class="app-help-container">
+            <header class="help-hero">
+                <h3>MANUEL SYSTÈME</h3>
+                <p>QUANTUM-NOVA OS v6.0</p>
+            </header>
+
+            <!-- Navigation Rapide -->
+            <section class="help-section">
+                <h4>🚀 Pour Commencer</h4>
+                <div class="help-card">
+                    <p>QUANTUM-NOVA est une suite logicielle modulaire. Utilisez le menu principal pour basculer entre les outils de calcul, de traçage et d'analyse.</p>
+                </div>
+            </section>
+
+            <!-- Calculatus -->
+            <section class="help-section">
+                <h4>🔢 Calcul Standard</h4>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <strong>Expressions Mixtes</strong>
+                        <p>Supporte les unités et les constantes complexes.</p>
+                        <div class="help-example-box"><code>2 + sin(45 deg) * 5</code></div>
+                    </div>
+                    <div class="help-card">
+                        <strong>Mémoire (ANS)</strong>
+                        <p>Utilisez la touche ANS pour rappeler le dernier résultat calculé.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grapheur -->
+            <section class="help-section">
+                <h4>📈 Grapheur Interactif</h4>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <strong>Fonctions y = f(x)</strong>
+                        <p>Définissez une fonction pour la tracer immédiatement.</p>
+                        <div class="help-example-box"><code>f(x) = x^2 - 3</code></div>
+                    </div>
+                    <div class="help-card">
+                        <strong>Équations Implicites</strong>
+                        <p>Tracez des cercles ou des formes complexes.</p>
+                        <div class="help-example-box"><code>x^2 + y^2 = 25</code></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Matrices -->
+            <section class="help-section">
+                <h4>🔲 Calcul Matriciel</h4>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <strong>Grille Dynamique</strong>
+                        <p>Choisissez les dimensions de A et de B, cliquez sur GÉNÉRER, puis remplissez les cases. La virgule décimale est acceptée.</p>
+                    </div>
+                    <div class="help-card">
+                        <strong>Opérations sur A</strong>
+                        <p>DET(A), INV(A), Aᵀ et TR(A). Déterminant et inverse exigent une matrice carrée.</p>
+                    </div>
+                    <div class="help-card">
+                        <strong>Opérations binaires</strong>
+                        <p>A+B et A−B exigent les mêmes dimensions ; A×B exige cols(A) = lignes(B).</p>
+                    </div>
+                    <div class="help-card">
+                        <strong>Pivot de Gauss</strong>
+                        <p><strong>RREF(A)</strong> calcule la forme échelonnée réduite de A. Utile pour le rang, l'indépendance des colonnes, ou comme étape vers l'inverse.</p>
+                    </div>
+                    <div class="help-card">
+                        <strong>Résolution A·x = b</strong>
+                        <p>Saisissez la matrice augmentée [M | b] dans A : la <em>dernière colonne</em> est le second membre. Le bouton <strong>RÉSOUDRE</strong> applique l'élimination de Gauss-Jordan et conclut : solution unique, infinité, ou aucune.</p>
+                        <div class="help-example-box">Système 3x + 2y = 7 et x − y = 1<br>→ A = 2×3 :<br>3, 2, 7<br>1, −1, 1</div>
+                    </div>
+                    <div class="help-card">
+                        <strong>Étapes pédagogiques</strong>
+                        <p>La case <em>« Afficher les étapes »</em> trace chaque opération élémentaire (échange Lᵢ↔Lⱼ, normalisation, élimination) — pratique pour suivre l'algorithme à la main.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Algèbre -->
+            <section class="help-section">
+                <h4>∆ Algèbre & Formel</h4>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <strong>Dérivées Symboliques</strong>
+                        <p>Calcule la dérivée exacte de l'expression fournie.</p>
+                        <div class="help-example-box"><code>derivative(x^3, x)</code> → 3 * x^2</div>
+                    </div>
+                    <div class="help-card">
+                        <strong>Simplification</strong>
+                        <p>Réduit les expressions mathématiques complexes.</p>
+                        <div class="help-example-box"><code>2x + 5x + 3</code> → 7x + 3</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats -->
+            <section class="help-section">
+                <h4>🎲 Statistiques</h4>
+                <div class="help-grid">
+                    <div class="help-card">
+                        <strong>Séries de données</strong>
+                        <p>Saisissez vos nombres séparés par des virgules ou des espaces.</p>
+                        <div class="help-example-box"><code>10, 12, 12, 15, 8</code></div>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="help-footer">
+                DESIGNED BY BATATRAX & GEMINI EXPERT GO<br>
+                SANCTUAIRE TECH © 2026
+            </footer>
+        </div>
+    </template>
+
+    <!-- Logic Core -->
+    <script src="core/ui-core.js"></script>
+    <script src="engine.js"></script> <!-- Moteur V5 -->
+    <script src="ui.js"></script>     <!-- UI V5 -->
+    <script src="onboarding.js"></script>
+    <script src="core/app-manager.js"></script>
+    <script src="apps/matrix/app-matrix.js"></script>
+    <script src="apps/algebra/app-algebra.js"></script>
+    <script src="apps/calc/app-calc.js"></script>
+    <script src="apps/graph/app-graph.js"></script>
+    <script src="apps/proba/app-proba.js"></script>
 </body>
 </html>

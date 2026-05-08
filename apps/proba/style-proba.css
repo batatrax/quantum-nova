@@ -1,0 +1,82 @@
+/**
+ * proba.css
+ */
+
+.app-proba-container {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.proba-section {
+    background: var(--v6-surface);
+    border: 1px solid var(--v6-border);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.proba-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.75rem;
+    color: var(--v6-accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.proba-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.proba-field {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--v6-border);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+#proba-stats-input {
+    flex: 1;
+}
+
+.proba-btn {
+    background: var(--v6-accent);
+    color: #000;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.proba-res-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.res-item {
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.res-item span {
+    color: #666;
+    font-size: 0.65rem;
+}
+
+.res-item strong {
+    color: var(--v6-accent);
+}
+
+.short { width: 60px; }

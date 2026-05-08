@@ -332,6 +332,11 @@ const KBD_STORAGE_KEY = 'qn:kbdProfile';
 // [2] INITIALISATION & HiDPI (Retina)
 // =============================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // V6: le grapheur est dans <template id="tpl-graph"> et n'est cloné dans
+    // le DOM qu'au loadView('graph'). Si le canvas n'existe pas encore,
+    // GraphApp.init() rejouera cette initialisation au moment voulu.
+    if (!document.getElementById('mathCanvas')) return;
+
     inputScreen    = document.getElementById('screen');
     canvas         = document.getElementById('mathCanvas');
     ctx            = canvas.getContext('2d', { alpha: false });
@@ -369,8 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // car il peut écraser le thème chargé par loadTheme() et la vue de base.
     if (typeof loadStateFromURL === 'function') loadStateFromURL();
 
-    ajouterLog('QUANTUM-NOVA v5', 'Moteur STELLAR HiDPI initialisé. Bienvenue.', 'var(--text-neon)');
-    ajouterLog('Aide', 'Tapez f(x)=sin(x) puis ⏎, ou ouvrez le 📖 MANUEL.', 'var(--text-dim)');
+    ajouterLog('QUANTUM-NOVA v6', 'Moteur STELLAR HiDPI initialisé. Bienvenue.', 'var(--text-neon)');
+    ajouterLog('Aide', 'Tapez f(x)=sin(x) puis ⏎, ou utilisez le bouton ❓ INFO.', 'var(--text-dim)');
 
     // Annonce le profil clavier actif (utile pour que l'utilisateur sache
     // immédiatement si l'auto-détection a deviné juste, sans avoir à ouvrir
@@ -454,14 +459,17 @@ const META_COMMANDS = [
         desc:  'Ouvre le manuel intégré'
     },
     {
-        // doc / docs — ouvre docs.html dans un nouvel onglet du navigateur
+        // V6 : docs.html supprimé, on redirige vers le module help intégré.
         pattern: /^docs?$/i,
         handler: () => {
-            window.open('docs.html', '_blank', 'noopener');
-            return 'docs.html ouvert dans un nouvel onglet';
+            if (window.qnApp && typeof window.qnApp.loadView === 'function') {
+                window.qnApp.loadView('help');
+                return 'Manuel intégré ouvert';
+            }
+            return 'Manuel indisponible';
         },
         usage: 'doc | docs',
-        desc:  'Ouvre la documentation complète dans un onglet séparé'
+        desc:  'Ouvre le manuel intégré (V6)'
     },
     {
         // theme <nom> — change le thème (alias acceptés : dark, sombre)

@@ -1,0 +1,371 @@
+/**
+ * style-core.css
+ * Mise en page spécifique à la version V6 Modulaire.
+ * Esthétique : Premium Cyber-Tech / Calculatrice Graphique
+ */
+
+:root {
+    --v6-bg: #05060a;
+    --v6-accent: #00f2ff;
+    --v6-accent-dim: rgba(0, 242, 255, 0.3);
+    --v6-surface: rgba(255, 255, 255, 0.03);
+    --v6-border: rgba(255, 255, 255, 0.08);
+    --v6-glass: rgba(10, 12, 20, 0.95);
+    --v6-glow: 0 0 20px rgba(0, 242, 255, 0.15);
+}
+
+/* Thème CYBER (défaut) — bleu cyan sur fond sombre */
+html[data-theme="cyber"] {
+    --v6-bg: #05060a;
+    --v6-accent: #00f2ff;
+    --v6-accent-dim: rgba(0, 242, 255, 0.3);
+    --v6-surface: rgba(255, 255, 255, 0.03);
+    --v6-border: rgba(255, 255, 255, 0.08);
+    --v6-glass: rgba(10, 12, 20, 0.95);
+    --v6-glow: 0 0 20px rgba(0, 242, 255, 0.15);
+}
+
+/* Thème LIGHT — fond clair, accent bleu profond */
+html[data-theme="light"] {
+    --v6-bg: #eef1f6;
+    --v6-fg: #1a1d2e;
+    --v6-accent: #2563eb;
+    --v6-accent-dim: rgba(37, 99, 235, 0.25);
+    --v6-surface: rgba(0, 0, 0, 0.03);
+    --v6-border: rgba(0, 0, 0, 0.1);
+    --v6-glass: rgba(255, 255, 255, 0.95);
+    --v6-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+}
+
+/* Thème PHOSPHOR — vert phosphore sur noir */
+html[data-theme="phosphor"] {
+    --v6-bg: #020a04;
+    --v6-accent: #39ff7a;
+    --v6-accent-dim: rgba(57, 255, 122, 0.3);
+    --v6-surface: rgba(57, 255, 122, 0.04);
+    --v6-border: rgba(57, 255, 122, 0.12);
+    --v6-glass: rgba(5, 15, 8, 0.95);
+    --v6-glow: 0 0 20px rgba(57, 255, 122, 0.18);
+}
+
+/* Thème PLASMA — magenta sur violet sombre */
+html[data-theme="plasma"] {
+    --v6-bg: #0e0518;
+    --v6-accent: #ff4dd2;
+    --v6-accent-dim: rgba(255, 77, 210, 0.3);
+    --v6-surface: rgba(255, 77, 210, 0.04);
+    --v6-border: rgba(255, 255, 255, 0.08);
+    --v6-glass: rgba(20, 8, 30, 0.95);
+    --v6-glow: 0 0 20px rgba(255, 77, 210, 0.18);
+}
+
+.v6-shell {
+    background: var(--v6-bg);
+    background-image:
+        radial-gradient(circle at 50% 50%, #1a1c2c 0%, transparent 100%),
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 30px 30px, 30px 30px;
+    color: var(--v6-fg, #fff);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Le Châssis (Bezel) */
+.workstation {
+    width: 420px;
+    height: 820px;
+    max-width: 95vw;
+    max-height: 95vh;
+    background: #12141d;
+    border: 4px solid #1c1f2b;
+    border-radius: 40px;
+    box-shadow: 
+        0 30px 60px rgba(0,0,0,0.8),
+        inset 0 2px 10px rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    border-bottom-width: 12px; /* Base plus épaisse style calculatrice */
+}
+
+/* Effet Verre sur l'Écran */
+#view-viewport {
+    flex: 1;
+    background: var(--v6-glass);
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--v6-border) transparent;
+}
+
+#view-viewport::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Status Bar */
+.v6-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    background: #0d0f16;
+    border-bottom: 1px solid var(--v6-border);
+    font-size: 0.65rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.v6-status-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.v6-icon-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.v6-icon-btn:hover {
+    color: var(--v6-accent);
+    transform: scale(1.1);
+}
+
+/* Optimisation Mobile / Responsive */
+@media (max-width: 500px) {
+    .v6-shell {
+        padding: 0;
+        background-image: none; /* Simplification sur mobile pour perf */
+    }
+
+    .workstation {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100%;
+        max-height: 100%;
+        border: none;
+        border-radius: 0;
+    }
+
+    .qn-launcher-grid {
+        gap: 10px;
+    }
+
+    .qn-launch-card {
+        padding: 15px 10px;
+    }
+}
+
+.v6-brand {
+    color: #666;
+    text-transform: uppercase;
+}
+
+.v6-brand small {
+    color: var(--v6-accent);
+    text-shadow: 0 0 10px var(--v6-accent-dim);
+}
+
+.v6-status-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.v6-breadcrumb {
+    color: var(--v6-accent);
+    opacity: 0.85;
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.v6-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Boîtes de résultats copiables */
+.qn-copyable {
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s, color 0.2s;
+}
+
+.qn-copyable:hover {
+    outline: 1px dashed var(--v6-accent-dim);
+    outline-offset: 2px;
+}
+
+.qn-copyable.qn-copied {
+    background: var(--v6-accent-dim) !important;
+    color: var(--v6-accent) !important;
+}
+
+.qn-copyable.qn-copied::after {
+    content: "✓ COPIÉ";
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 0.55rem;
+    color: var(--v6-accent);
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+#clock {
+    color: #444;
+}
+
+/* Footer Nav */
+.v6-footer-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: #0d0f16;
+    padding: 10px;
+    gap: 10px;
+    border-top: 1px solid var(--v6-border);
+}
+
+.v6-nav-btn {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--v6-border);
+    color: #666;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.v6-nav-btn:hover {
+    background: rgba(0, 242, 255, 0.05);
+    border-color: var(--v6-accent-dim);
+    color: var(--v6-accent);
+    transform: translateY(-2px);
+}
+
+/* Menu d'accueil */
+.qn-home-menu {
+    padding: 30px 20px;
+    animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.qn-home-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.qn-home-header h2 {
+    font-size: 1.1rem;
+    letter-spacing: 6px;
+    color: #fff;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.qn-home-header p {
+    font-size: 0.7rem;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.qn-launcher-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.qn-launch-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+    border: 1px solid var(--v6-border);
+    border-radius: 20px;
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.qn-launch-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 1px solid var(--v6-accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: inset 0 0 15px var(--v6-accent-dim);
+}
+
+.qn-launch-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255,255,255,0.05);
+}
+
+.qn-launch-card:hover::after {
+    opacity: 0.2;
+}
+
+.qn-launch-card .icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+}
+
+.qn-launch-card .title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.qn-launch-card:hover .title {
+    color: var(--v6-accent);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animations de transition entre Apps */
+.app-transition {
+    animation: fadeInApp 0.3s ease-out;
+}
+
+@keyframes fadeInApp {
+    from { opacity: 0; filter: blur(10px); }
+    to { opacity: 1; filter: blur(0); }
+}
+

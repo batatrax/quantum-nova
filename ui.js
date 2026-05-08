@@ -625,17 +625,13 @@ function promptShade() {
 // ÉVÉNEMENTS AUTOMATIQUES
 // =============================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Détection du mode widget (?widget=1) — DOIT être fait en tout premier
-    // pour que la classe body.widget-mode soit appliquée avant le premier
-    // paint, évitant un flash visuel "mode normal → mode widget".
-    detectWidgetMode();
+    // V6 : le mode widget V5 (?widget=1) n'a plus de sens — la V6 est
+    // intégrée en iframe Google Sites. On garde la fonction définie plus
+    // bas pour compatibilité ascendante mais on ne l'invoque plus.
+    // detectWidgetMode();
 
-    // Fermeture des modales en cliquant sur l'overlay sombre
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        modal.addEventListener('click', e => {
-            if (e.target === modal) fermerModal(modal.id);
-        });
-    });
+    // V6 : les modales V5 (.modal-overlay) ont été remplacées par le
+    // système de templates / vues d'AppManager. Plus de listener à brancher.
 
     // Chargement du thème persisté (ou défaut 'light' si aucun).
     // Doit être appelé APRÈS que le DOM soit prêt pour que refreshThemeUI()
@@ -652,9 +648,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // pour 60+ boutons — plus propre qu'attacher un handler à chacun.
     // On utilise pointerdown plutôt que click pour avoir un retour immédiat
     // à l'enfoncement plutôt qu'au relâchement.
+    // V6 : on étend la délégation aux classes de boutons des nouveaux
+    // modules (calc, matrix, algebra, proba, home cards, footer nav)
+    // afin de conserver le retour haptique partout, pas seulement sur
+    // les anciens .key du clavier V5.
+    const QN_TAPPABLE_SELECTOR =
+        '.key, .calc-btn, .matrix-op-btn, .btn-gen, ' +
+        '.algebra-quick-fn, #algebra-execute, ' +
+        '.proba-btn, .qn-launch-card, .qn-pill, ' +
+        '.v6-nav-btn, .v6-icon-btn, .g-btn';
+
     document.addEventListener('pointerdown', e => {
         const target = e.target;
-        if (target && target.classList && target.classList.contains('key')) {
+        if (target && target.closest && target.closest(QN_TAPPABLE_SELECTOR)) {
             if (typeof hapticTap === 'function') hapticTap();
         }
     }, true);

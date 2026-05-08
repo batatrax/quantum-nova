@@ -1,0 +1,96 @@
+/**
+ * help.css
+ * Design du centre d'aide V6 (Style Cyber-Manuel)
+ */
+
+.app-help-container {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    scrollbar-width: thin;
+}
+
+.help-hero {
+    text-align: center;
+    border-bottom: 1px solid var(--v6-border);
+    padding-bottom: 20px;
+}
+
+.help-hero h3 {
+    color: var(--v6-accent);
+    letter-spacing: 4px;
+    margin: 0;
+}
+
+.help-hero p {
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+.help-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.help-section h4 {
+    font-size: 0.8rem;
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 12px;
+    border-left: 3px solid var(--v6-accent);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.help-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.help-card {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--v6-border);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.help-card strong {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--v6-accent);
+    margin-bottom: 5px;
+}
+
+.help-card p {
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: #aaa;
+    margin: 0;
+}
+
+.help-example-box {
+    margin-top: 10px;
+    background: #000;
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px dashed #333;
+}
+
+.help-example-box code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #00ff9d; /* Couleur différente pour le code */
+}
+
+.help-footer {
+    text-align: center;
+    padding: 40px 0;
+    opacity: 0.3;
+    font-size: 0.6rem;
+}

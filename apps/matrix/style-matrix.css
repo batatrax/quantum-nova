@@ -1,0 +1,264 @@
+/**
+ * matrix.css
+ */
+
+.app-matrix-container {
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.matrix-setup {
+    background: rgba(255,255,255,0.03);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--v6-border);
+}
+
+.dim-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.dim-controls input {
+    width: 45px;
+    background: #000;
+    border: 1px solid var(--v6-border);
+    color: var(--v6-accent);
+    padding: 4px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.btn-gen {
+    background: var(--v6-accent);
+    color: #000;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Grille de saisie */
+.matrix-grid-wrapper {
+    margin-top: 15px;
+    display: grid;
+    gap: 5px;
+    justify-content: center;
+}
+
+.matrix-input {
+    width: 100%;
+    min-width: 40px;
+    max-width: 60px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--v6-border);
+    color: #fff;
+    padding: 8px;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.matrix-input:focus {
+    border-color: var(--v6-accent);
+    outline: none;
+}
+
+/* Barre d'outils */
+.matrix-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.matrix-op-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--v6-border);
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.matrix-op-btn:hover {
+    background: rgba(0, 242, 255, 0.1);
+    border-color: var(--v6-accent);
+}
+
+/* Résultat */
+#matrix-result-output {
+    background: rgba(0, 242, 255, 0.03);
+    border: 1px dashed var(--v6-accent);
+    border-radius: 10px;
+    padding: 15px;
+    min-height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.res-matrix {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-left: 2px solid var(--v6-accent);
+    border-right: 2px solid var(--v6-accent);
+    padding: 0 10px;
+}
+
+.res-row {
+    display: flex;
+    gap: 15px;
+}
+
+.res-row span {
+    min-width: 40px;
+    text-align: center;
+}
+
+.res-error {
+    color: #ff4444;
+}
+
+.res-label {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--v6-accent);
+    margin-bottom: 8px;
+    text-transform: none;
+    font-weight: bold;
+}
+
+.res-value {
+    font-size: 0.9rem;
+    color: var(--v6-accent);
+    text-align: center;
+    margin: 8px 0;
+}
+
+#matrix-result-output {
+    overflow-x: auto;
+}
+
+/* === Pivot de Gauss === */
+.matrix-gauss-toolbar {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.matrix-gauss-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #888;
+    cursor: pointer;
+    user-select: none;
+    margin-left: auto;
+}
+
+.matrix-gauss-toggle input[type="checkbox"] {
+    accent-color: var(--v6-accent);
+    cursor: pointer;
+}
+
+.gauss-steps {
+    margin: 12px 0;
+    padding: 8px 10px;
+    border-left: 2px solid var(--v6-accent-dim);
+    background: var(--v6-surface);
+    border-radius: 4px;
+}
+
+.gauss-steps summary {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--v6-accent);
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 4px 0;
+    user-select: none;
+}
+
+.gauss-step {
+    margin: 10px 0;
+    padding-left: 10px;
+    border-left: 1px dashed var(--v6-border);
+}
+
+.gauss-step-title {
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.gauss-final-label {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--v6-accent);
+    text-transform: uppercase;
+    margin: 14px 0 6px;
+    font-weight: bold;
+}
+
+.gauss-summary {
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: var(--v6-accent-dim);
+    border-left: 3px solid var(--v6-accent);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: var(--v6-accent);
+    font-weight: bold;
+}
+
+.gauss-solution {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--v6-surface);
+    border: 1px solid var(--v6-border);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.gauss-solution > div {
+    color: var(--v6-accent);
+}
+
+.gauss-detail {
+    margin-top: 6px;
+    font-size: 0.7rem;
+    color: #888;
+    font-style: italic;
+}
+
+.gauss-rank {
+    margin-top: 6px;
+    font-size: 0.65rem;
+    color: #666;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Séparateur visuel pour matrice augmentée [A | b] */
+.res-row .augmented-sep {
+    border-right: 2px solid var(--v6-accent);
+    padding-right: 12px;
+    margin-right: 6px;
+}
