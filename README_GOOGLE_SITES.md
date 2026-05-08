@@ -1,54 +1,87 @@
-# QUANTUM-NOVA — Édition étudiant / Google Sites
+# QUANTUM-NOVA V6 — Édition étudiant / Google Sites
 
-## Version retenue
+## URL stable (à utiliser dans Google Sites)
 
-Cette version part de `V6_bis`, car c'est la plus proche d'un vrai outil utilisable par un étudiant : menu plus visible, mode matrices activé, historique cliquable, clavier plus lisible, autocomplétion segmentée et page de droite déjà préparée.
+Le projet est hébergé sur **GitHub Pages** depuis le dépôt
+[batatrax/quantum-nova](https://github.com/batatrax/quantum-nova). L'URL
+ne change pas entre les versions : elle pointe toujours sur la dernière
+version publiée sur la branche `main`.
 
-La version `_repo` est plus sobre et légèrement plus prudente visuellement, mais elle laisse les matrices en mode "bientôt" et donne moins de repères immédiats à un étudiant.
+| Cible                   | URL d'embed                                           |
+|-------------------------|-------------------------------------------------------|
+| Calculatrice (gauche)   | `https://batatrax.github.io/quantum-nova/index.html`  |
+| Panneau d'aide (droite) | `https://batatrax.github.io/quantum-nova/panel.html`  |
+| Démo deux iframes       | `https://batatrax.github.io/quantum-nova/demo.html`   |
 
-## Ce qui a été fusionné / corrigé
+Pour publier une nouvelle version : commit + push sur `main`. Le workflow
+GitHub Actions (`.github/workflows/static.yml`) déploie automatiquement.
+L'URL reste la même.
 
-- Base fonctionnelle : `V6_bis`.
-- Conservation de l'architecture modulaire existante.
-- Conservation du mode graphique et de son aide visuelle.
-- Conservation du mode matrices activé.
-- Correction du module matrices pour être plus exploitable en cours :
-  - les cellules acceptent maintenant `1/2`, `-3`, `sqrt(2)` et les décimales avec virgule ;
-  - `DET(A)` affiche la formule pour les matrices 2×2 et 3×3 ;
-  - `RÉSOUDRE A·x = b` ne se contente plus de montrer le pivot : il conclut clairement sur la solution unique, aucune solution ou infinité de solutions ;
-  - la documentation du panneau matrices a été réécrite pour un usage étudiant.
-- Retrait d'un message trompeur qui disait que la zone spécialisée matrices arriverait plus tard.
-- Titre et statut initial clarifiés pour l'édition étudiant.
+## Contenu de la V6
 
-## Contrainte Google Sites
+- **Architecture modulaire** : un répertoire par mode
+  (`modes/calc/`, `modes/graph/`, `modes/scientific/`, `modes/matrix/`,
+  `modes/stats/`), chaque mode défini par 4 fichiers numérotés
+  (`01_mode_*`, `02_keyb_*`, `03_doc_*`, `04_examples_*`).
+- **5 modes** :
+  - **Calcul** — calcul standard, `ANS`, historique cliquable.
+  - **Scientifique** — trigonométrie, log/exp, panneau `MATH ▾`,
+    DÉRIVER / SIMPLIFIER / FACTORISER.
+  - **Graphique** — tracé de fonctions (V5 préservé), aide visuelle à droite.
+  - **Matrices** — wizard 2 étapes, pivot de Gauss étape par étape rendu KaTeX,
+    DET(A), INV(A), Aᵀ, TR(A), A+B, A−B, A·B, RREF, RÉSOUDRE A·x=b avec
+    conclusion (unique / aucune / infinité de solutions), saisie tolérante
+    (`1/2`, `-3`, `sqrt(2)`, virgule), fractions exactes (1/3 plutôt que
+    0,333), persistance localStorage.
+  - **Statistiques** — module à venir.
+- **Clavier intelligent par mode** (`core/loader.js`) :
+  - `calc` / `scientific` : grille fixe (chiffres + opérateurs) + zone
+    swipeable horizontale (fonctions). Drag-souris + chevron animé.
+  - `matrix` : tout en grille fixe 4 colonnes (le pavé numérique de gauche
+    serait inutile, les chiffres se tapent dans les cellules).
+- **Cosmétique** : touches 3D, transitions fluides, 4 thèmes (Clair par
+  défaut, Cyber, Phosphor, Plasma).
 
-Google Sites n'est pas l'endroit idéal pour servir directement un projet multi-fichiers complexe. La voie la plus robuste est :
+## Intégration dans Google Sites
 
-1. héberger ce dossier tel quel sur GitHub Pages, Netlify, Cloudflare Pages ou équivalent ;
-2. dans Google Sites, utiliser `Insertion → Intégrer → URL` ;
-3. intégrer `index.html` pour la calculatrice ;
-4. intégrer `panel.html` dans une colonne à droite si tu veux conserver la page de droite.
+Page Google Sites en deux colonnes :
 
-Pour une page Google Sites en deux colonnes :
+- **colonne gauche** : intégrer `index.html`
+- **colonne droite** : intégrer `panel.html`
 
-- colonne gauche : `index.html` ;
-- colonne droite : `panel.html`.
+Les deux iframes communiquent via `BroadcastChannel('quantum-nova')` :
+elles doivent être servies depuis la **même origine** (ici GitHub Pages,
+donc `https://batatrax.github.io`) pour que la synchronisation marche
+(thème, aide, mode matrices, export…).
 
-Les deux doivent être hébergés au même endroit pour que `BroadcastChannel` synchronise correctement l'aide, le mode graphique, l'export et les matrices.
+Dimensions conseillées :
+- iframe gauche : largeur ~400 px, hauteur ~1000 px
+- iframe droite : largeur ~480+ px, hauteur ~1000 px
 
-## À tester dans le navigateur
+## À tester rapidement après embed
 
-- Menu `≡ MODES`.
-- Mode Calcul : saisie simple, `ANS`, historique cliquable.
-- Mode Graphique : `f(x)=sin(x)`, zoom, déplacement, aide à droite.
-- Mode Matrices :
-  - créer A en 2×2 ;
-  - tester `DET(A)` ;
-  - tester une cellule `1/2` ;
-  - activer `Système A·x = b` ;
-  - tester `RÉSOUDRE A·x = b`.
-- Intégration dans Google Sites avec deux embeds côte à côte.
+1. Bouton `≡ MODES` ouvre le menu des modules.
+2. Mode **Calcul** : taper `2 + 3 × 4 =`, vérifier que le résultat apparaît,
+   cliquer dessus dans l'historique, vérifier qu'il se réinjecte.
+3. Mode **Graphique** : saisir `f(x) = sin(x)`, voir la courbe à gauche,
+   l'aide à droite.
+4. Mode **Matrices** :
+   - wizard à droite : taille de A = 2×2, "Non, juste A", Continuer.
+   - cocher `Système A·x = b`. Remplir : `3, 2, 7` puis `1, -1, 1`.
+   - cliquer `RÉSOUDRE A·x = b` à gauche.
+   - vérifier que la conclusion arrive : `x = 9/5, y = 4/5` (avec
+     `Fractions exactes` coché).
 
-## Note importante
+## Note pédagogique
 
-Cette version reste un outil pédagogique web. Elle peut aider à comprendre et vérifier les méthodes, mais son usage en évaluation dépend toujours des règles du professeur ou de l'établissement.
+Cet outil aide à comprendre et vérifier les méthodes (le pivot de Gauss
+montre chaque opération sur les lignes). Son usage en évaluation reste
+soumis aux règles du professeur ou de l'établissement.
+
+## Tag de sauvegarde
+
+L'historique antérieur (V5.1 + une V6 ratée à structure `apps/`) a été
+préservé sous le tag `v5-and-failed-v6-archive`. Pour le récupérer :
+```
+git checkout v5-and-failed-v6-archive
+```
