@@ -1,0 +1,410 @@
+/**
+ * modes/matrix/matrix.css
+ * Mode MATRICES — styles partagés calc/panel.
+ *
+ *   - Côté calc (index.html) : un récap léger #matrixRecap dans la zone
+ *     graphique + état grisé du clavier pour A+B/A·B/A−B sans matrice B.
+ *   - Côté panneau (panel.html) : wizard de configuration, grilles A/B
+ *     à compléter, zone résultat KaTeX.
+ */
+
+/* ===========================================================
+   Côté calc : récap dans la zone graphique
+   =========================================================== */
+.matrix-recap {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 30px;
+    background: var(--screen-bg, #07090f);
+    color: var(--text-main, #c0caf5);
+    font-family: 'JetBrains Mono', monospace;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+body.mode-matrix .matrix-recap {
+    display: flex;
+}
+
+.matrix-recap-card {
+    max-width: 320px;
+    padding: 20px 24px;
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 12px;
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.5));
+}
+
+.matrix-recap-card h3 {
+    margin: 0 0 12px;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.matrix-recap-dims {
+    color: var(--text-main, #c0caf5);
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+}
+
+.matrix-recap-tip {
+    color: var(--text-dim, #565f89);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0;
+    font-style: italic;
+}
+
+.matrix-recap-arrow {
+    font-size: 1.6rem;
+    color: var(--text-neon, #7aa2f7);
+    opacity: 0.6;
+    user-select: none;
+    animation: matrixArrow 1.6s ease-in-out infinite;
+}
+
+@keyframes matrixArrow {
+    0%, 100% { transform: translateX(0); opacity: 0.5; }
+    50%      { transform: translateX(8px); opacity: 1; }
+}
+
+/* ===========================================================
+   Côté panneau : container du wizard / éditeur
+   =========================================================== */
+.matrix-container-panel {
+    padding: 4px 0 24px;
+}
+
+/* ===========================================================
+   Étape 1 : WIZARD (configuration des matrices)
+   =========================================================== */
+.matrix-wizard {
+    max-width: 460px;
+    margin: 24px auto 0;
+    padding: 22px 24px;
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 12px;
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.5));
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+.matrix-wizard h3 {
+    margin: 0 0 18px;
+    text-align: center;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.wizard-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.wizard-stack {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.wizard-label {
+    font-size: 0.85rem;
+    color: var(--text-main, #c0caf5);
+}
+
+.wizard-num {
+    width: 56px;
+    height: 36px;
+    background: var(--screen-bg, #07090f);
+    color: var(--text-neon, #7aa2f7);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+    padding: 4px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.wizard-num:focus {
+    outline: none;
+    border-color: var(--text-neon, #7aa2f7);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--text-neon, #7aa2f7) 25%, transparent);
+}
+
+.wizard-x {
+    color: var(--text-dim, #565f89);
+    font-size: 1rem;
+}
+
+.wizard-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wizard-choice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.12s ease;
+}
+
+.wizard-choice:hover {
+    background: color-mix(in srgb, var(--text-neon, #7aa2f7) 8%, transparent);
+}
+
+.wizard-choice input[type="radio"] {
+    accent-color: var(--text-neon, #7aa2f7);
+}
+
+.wizard-actions {
+    justify-content: center;
+    margin-top: 6px;
+    margin-bottom: 0;
+}
+
+.wizard-cta {
+    padding: 10px 26px;
+    background: var(--text-neon, #7aa2f7);
+    color: var(--screen-bg, #07090f);
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: filter 0.12s ease, transform 0.06s ease;
+}
+
+.wizard-cta:hover { filter: brightness(1.1); }
+.wizard-cta:active { transform: scale(0.98); }
+
+/* ===========================================================
+   Étape 2 : EDIT (header + grilles + résultat)
+   =========================================================== */
+.matrix-edit-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.matrix-back {
+    background: transparent;
+    color: var(--text-dim, #565f89);
+    border: 1px solid var(--screen-border, #252840);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    transition: color 0.12s, border-color 0.12s;
+}
+
+.matrix-back:hover {
+    color: var(--text-neon, #7aa2f7);
+    border-color: var(--text-neon, #7aa2f7);
+}
+
+.matrix-system-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-dim, #565f89);
+    user-select: none;
+}
+
+.matrix-system-toggle input[type="checkbox"] {
+    accent-color: var(--text-neon, #7aa2f7);
+}
+
+.matrix-system-toggle:hover { color: var(--text-main, #c0caf5); }
+
+/* Grilles A et B côte-à-côte */
+.matrix-blocks {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.matrix-block {
+    flex: 1 1 220px;
+    min-width: 180px;
+    padding: 10px 12px;
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 8px;
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.5));
+}
+
+.matrix-block h4 {
+    margin: 0 0 10px;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.78rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.matrix-grid {
+    display: grid;
+    gap: 4px;
+}
+
+.matrix-grid input {
+    min-width: 38px;
+    height: 32px;
+    text-align: center;
+    background: var(--screen-bg, #07090f);
+    color: var(--text-main, #c0caf5);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.matrix-grid input:focus {
+    outline: none;
+    border-color: var(--text-neon, #7aa2f7);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--text-neon, #7aa2f7) 25%, transparent);
+}
+
+/* Cellule de la colonne | b (système A·x = b) */
+.matrix-grid input.matrix-cell-aug {
+    border-left: 2px solid var(--text-neon, #7aa2f7);
+    background: color-mix(in srgb, var(--text-neon, #7aa2f7) 6%, var(--screen-bg, #07090f));
+    color: var(--text-neon, #7aa2f7);
+}
+
+.matrix-hint {
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    color: var(--text-dim, #565f89);
+    font-style: italic;
+}
+
+/* ===========================================================
+   Zone résultat (KaTeX)
+   =========================================================== */
+.matrix-output {
+    padding: 12px;
+    border: 1px dashed var(--text-neon, #7aa2f7);
+    border-radius: 8px;
+    min-height: 80px;
+}
+
+.matrix-output h4 {
+    margin: 0 0 12px;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.matrix-empty {
+    color: var(--text-dim, #565f89);
+    font-style: italic;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 24px 0;
+}
+
+.matrix-step {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: rgba(122, 162, 247, 0.05);
+    border-left: 2px solid var(--text-neon, #7aa2f7);
+    border-radius: 0 6px 6px 0;
+}
+
+.matrix-step-desc {
+    color: var(--text-dim, #565f89);
+    font-size: 0.78rem;
+    margin-bottom: 6px;
+}
+
+.matrix-step-mat {
+    color: var(--text-main, #c0caf5);
+    overflow-x: auto;
+}
+
+.matrix-error {
+    color: var(--text-error, #f7768e);
+    font-size: 0.85rem;
+    padding: 10px;
+    background: rgba(247, 118, 142, 0.08);
+    border-left: 3px solid var(--text-error, #f7768e);
+    border-radius: 0 4px 4px 0;
+}
+
+/* ===========================================================
+   Touches du clavier désactivées (boutons B sans matrice B)
+   =========================================================== */
+.key.key-disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    filter: grayscale(0.4);
+}
+
+.key.key-disabled:hover {
+    background: inherit;
+    transform: none;
+}
+
+/* ===========================================================
+   Conclusion pédagogique après résolution de système
+   =========================================================== */
+.matrix-conclusion {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--text-success, #9ece6a) 9%, var(--screen-bg, #07090f));
+    border: 1px solid color-mix(in srgb, var(--text-success, #9ece6a) 35%, var(--screen-border, #252840));
+}
+.matrix-conclusion strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-success, #9ece6a);
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    font-size: 0.76rem;
+}
+.matrix-conclusion p {
+    margin: 0;
+    color: var(--text-main, #c0caf5);
+    font-size: 0.84rem;
+}
+.matrix-conclusion-none {
+    background: color-mix(in srgb, var(--text-error, #f7768e) 10%, var(--screen-bg, #07090f));
+    border-color: color-mix(in srgb, var(--text-error, #f7768e) 38%, var(--screen-border, #252840));
+}
+.matrix-conclusion-none strong { color: var(--text-error, #f7768e); }
+.matrix-conclusion-infinite {
+    background: color-mix(in srgb, var(--text-warn, #e0af68) 10%, var(--screen-bg, #07090f));
+    border-color: color-mix(in srgb, var(--text-warn, #e0af68) 38%, var(--screen-border, #252840));
+}
+.matrix-conclusion-infinite strong { color: var(--text-warn, #e0af68); }
+.matrix-solution-list {
+    color: var(--text-main, #c0caf5);
+    overflow-x: auto;
+}

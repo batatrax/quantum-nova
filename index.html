@@ -1,15 +1,62 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="light" data-default-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUANTUM-NOVA v5 — Stellar Mathematics Engine</title>
+    <title>QUANTUM-NOVA — Édition étudiant</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="core/menu.css">
+    <link rel="stylesheet" href="core/help.css">
+    <link rel="stylesheet" href="modes/matrix/matrix.css">
+
+    <!-- KaTeX : rendu graphique des formules mathématiques (LaTeX → SVG/HTML).
+         CDN officiel avec SRI. À basculer en local plus tard si besoin. -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+          integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"
+          crossorigin="anonymous">
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+            integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"
+            crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <!-- Services partagés (chargés avant les modes pour que les API soient dispo) -->
+    <script src="core/history.js" defer></script>
+    <script src="core/memory.js" defer></script>
+    <script src="core/erase.js" defer></script>
+    <script src="core/export.js" defer></script>
+    <!-- Auto-complétion : 5 fichiers découpés par responsabilité -->
+    <script src="core/autocomplete/01_catalog.js" defer></script>
+    <script src="core/autocomplete/02_engine.js" defer></script>
+    <script src="core/autocomplete/03_dropdown.js" defer></script>
+    <script src="core/autocomplete/04_ghost.js" defer></script>
+    <script src="core/autocomplete/05_wire.js" defer></script>
+    <script src="core/preview.js" defer></script>
+    <!-- Pour chaque mode, ses fichiers sont chargés dans l'ordre numéroté :
+         01_mode_  → enregistre MODE_HANDLERS[<id>]
+         02_keyb_  → expose la définition KEYBOARD_<ID>
+         (le doc/examples vivent dans panel.html, pas chargés ici) -->
+    <script src="modes/calc/01_mode_calc.js" defer></script>
+    <script src="modes/calc/02_keyb_calc.js" defer></script>
+    <script src="modes/scientific/01_mode_scientific.js" defer></script>
+    <script src="modes/scientific/02_keyb_scientific.js" defer></script>
+    <script src="modes/graph/01_mode_graph.js" defer></script>
+    <script src="modes/graph/02_keyb_graph.js" defer></script>
+    <script src="modes/matrix/01_mode_matrix.js" defer></script>
+    <script src="modes/matrix/02_keyb_matrix.js" defer></script>
+    <script src="modes/stats/01_mode_stats.js" defer></script>
+    <script src="modes/stats/02_keyb_stats.js" defer></script>
+    <script src="core/menu.js" defer></script>
+    <script src="core/loader.js" defer></script>
+    <!-- Bouton AIDE de la calc : affiche un sommaire et émet des messages
+         BroadcastChannel vers panel.html (qui héberge le contenu réel).
+         Les fichiers help/examples ne sont plus chargés ici — ils vivent
+         dans panel.html, allégeant le bundle de la calc. -->
+    <script src="core/help.js" defer></script>
 
     <style>
         body.widget-mode, body {
@@ -42,15 +89,37 @@
 <div class="workstation">
 
     <div class="brand-header">
-        <div class="brand-logo">QUANTUM&#8209;NOVA</div>
-        <div class="brand-tagline">STELLAR MATHEMATICS ENGINE v5</div>
+        <div class="brand-logo">QUANTUM<span>NOVA</span></div>
+        <div class="brand-tagline">ÉDITION ÉTUDIANT // V6</div>
+        <div class="brand-actions">
+            <button type="button" class="brand-btn" id="brandMenuBtn" onclick="ouvrirMenuModes()" title="Changer de mode (Calcul, Graphique, Matrices...)">≡ MODES</button>
+
+            <button type="button" class="brand-btn" id="brandExportBtn" onclick="QNExport.open()" title="Export — calcul, fonction, graphique…">📤</button>
+
+            <!-- Thème : bouton-icône discret + dropdown custom (le select V5
+                 reste dans le DOM caché pour compat refreshThemeUI) -->
+            <div class="theme-control" id="themeControl">
+                <button type="button" class="brand-btn theme-trigger" id="themeTrigger"
+                        aria-haspopup="true" aria-expanded="false"
+                        title="Thème">🌓</button>
+                <ul class="theme-dropdown" id="themeDropdown" hidden role="menu">
+                    <li role="none"><button role="menuitem" type="button" data-theme="light">Clair</button></li>
+                    <li role="none"><button role="menuitem" type="button" data-theme="cyber">Cyber</button></li>
+                    <li role="none"><button role="menuitem" type="button" data-theme="phosphor">Phosphor</button></li>
+                    <li role="none"><button role="menuitem" type="button" data-theme="plasma">Plasma</button></li>
+                </ul>
+            </div>
+            <select id="themeSelect" hidden aria-hidden="true"></select>
+
+            <button type="button" class="brand-btn" id="brandHelpBtn" onclick="ouvrirAide()" title="Ouvrir l'aide et la documentation">📖 AIDE</button>
+        </div>
     </div>
 
     <div class="screen-module">
         <div class="screen-header">
             <div class="header-left">
                 <span class="status-led" id="led"></span>
-                <span id="statusText">MOTEUR STELLAR // ACTIF</span>
+                <span id="statusText">MODE CALCUL // ACTIF</span>
             </div>
             <div class="header-right">
                 <span id="angleModeLabel">RAD</span>
@@ -60,11 +129,81 @@
 
         <div class="canvas-container" id="canvasContainer">
             <canvas id="mathCanvas"></canvas>
-            <div class="console-overlay">
-                <div class="input-row">
-                    <span class="prompt-symbol">❯</span>
-                    <input type="text" id="screen" class="input-screen" placeholder="f(x)=sin(x)   |   aide   |   popup" autocomplete="off" spellcheck="false" aria-label="Champ de saisie mathématique">
+
+            <!-- Panneau MATH du mode ALGÈBRE — fonctions avancées et actions
+                 formelles. Ouvert via la touche MATH ▾ du clavier algèbre. -->
+            <div id="scientificToolbox" class="scientific-toolbox">
+                <div class="toolbox-header">
+                    <button type="button" class="toolbox-back" onclick="fermerMath()">← Clavier</button>
+                    <span class="toolbox-title">MATH</span>
                 </div>
+                <div class="toolbox-body">
+                    <section class="toolbox-section">
+                        <h4>Trigonométrie inverse</h4>
+                        <div class="toolbox-row">
+                            <button type="button" data-fn="asin(">asin</button>
+                            <button type="button" data-fn="acos(">acos</button>
+                            <button type="button" data-fn="atan(">atan</button>
+                        </div>
+                    </section>
+                    <section class="toolbox-section">
+                        <h4>Hyperboliques</h4>
+                        <div class="toolbox-row">
+                            <button type="button" data-fn="sinh(">sinh</button>
+                            <button type="button" data-fn="cosh(">cosh</button>
+                            <button type="button" data-fn="tanh(">tanh</button>
+                        </div>
+                    </section>
+                    <section class="toolbox-section">
+                        <h4>Racines & puissances</h4>
+                        <div class="toolbox-row">
+                            <button type="button" data-fn="cbrt(">∛  cbrt</button>
+                            <button type="button" data-fn="nthRoot(">ⁿ√x</button>
+                            <button type="button" data-fn="^3">x³</button>
+                        </div>
+                    </section>
+                    <section class="toolbox-section">
+                        <h4>Nombres</h4>
+                        <div class="toolbox-row">
+                            <button type="button" data-fn="abs(">|x|  abs</button>
+                            <button type="button" data-fn="!" data-suffix="true">n!</button>
+                            <button type="button" data-fn="mod(">mod</button>
+                            <button type="button" data-fn="floor(">floor</button>
+                            <button type="button" data-fn="ceil(">ceil</button>
+                            <button type="button" data-fn="round(">round</button>
+                        </div>
+                    </section>
+                    <section class="toolbox-section toolbox-formal">
+                        <h4>Calcul formel</h4>
+                        <div class="toolbox-row">
+                            <button type="button" data-action="derive">DÉRIVER</button>
+                            <button type="button" data-action="simplify">SIMPLIFIER</button>
+                            <button type="button" data-action="rationalize">FACTORISER</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Menu de sélection de mode (V6 evolution) — visible au démarrage,
+                 masqué dès qu'on choisit un mode, rappelable via le bouton ≡ MENU
+                 dans la rangée system-keys du clavier. -->
+            <div id="modeMenu" class="mode-menu-overlay">
+                <!-- Zone d'affichage de la calculatrice par défaut.
+                     Reste visible dans le menu : permet d'utiliser la
+                     calculatrice sans avoir à choisir un module. -->
+                <div class="calc-display-block" id="calcDisplayBlock">
+                    <div class="calc-display-header">CALCULATRICE</div>
+                    <div class="calc-display-history" id="calcHistory">
+                        <div class="calc-display-empty">Tape ton calcul puis appuie sur =</div>
+                    </div>
+                </div>
+
+                <div class="mode-menu-divider">Modules spécialisés</div>
+
+                <!-- Les cartes sont injectées par mode-menu.js depuis le
+                     tableau MODES — pour ajouter un module en V7, éditer
+                     uniquement ce tableau. -->
+                <div class="mode-menu-grid" id="modeMenuGrid"></div>
             </div>
         </div>
 
@@ -87,89 +226,63 @@
 
     <div class="resize-handle" id="resizeHandle" role="separator" aria-orientation="horizontal" aria-label="Redimensionner l'écran graphique" title="Glisser pour ajuster la hauteur de l'écran"></div>
 
+    <!-- Barre de saisie persistante : visible dans tous les modes, juste
+         au-dessus du clavier. L'utilisateur voit ce qu'il tape et peut
+         corriger avec ⌫ ou C avant de valider.
+         En mode Graphique, deux boutons supplémentaires apparaissent à droite :
+           • ▾ pour ouvrir le panneau d'outils tracé
+           • ↗ pour détacher (à venir au palier 2) -->
+    <!-- Aperçu graphique de l'expression saisie (rendu KaTeX en temps réel). -->
+    <div id="latexPreview" class="latex-preview" aria-live="polite"></div>
+
+    <div class="input-bar">
+        <span class="prompt-symbol">❯</span>
+        <input type="text" id="screen" class="input-screen" placeholder="Tape ton calcul (ex : 2 + 3 × 4)" autocomplete="off" spellcheck="false" aria-label="Champ de saisie">
+        <button type="button" class="input-bar-btn input-bar-btn-graph" id="graphToolsBtn" onclick="toggleGraphTools()" title="Ouvrir/fermer les outils du tracé">Outils ▾</button>
+        <button type="button" class="input-bar-btn input-bar-btn-graph" id="graphDetachBtn" onclick="detacherGraphPanneau()" title="Détacher le panneau (à venir)" disabled>↗</button>
+
+        <!-- Panneau d'outils du mode Graphique — overlay au-dessus de la
+             barre, ouvert via le bouton "Outils ▾". -->
+        <div id="graphToolsPanel" class="graph-tools-panel">
+            <section class="graph-tools-section">
+                <h4>Vue & affichage</h4>
+                <div class="graph-tools-row">
+                    <button type="button" data-graph-action="reset-view" title="Recentrer la vue sur [-10, 10]">⌂ VUE</button>
+                    <button type="button" data-graph-action="clear-graph" title="Effacer toutes les courbes">🗑 GRAPHE</button>
+                    <button type="button" data-graph-action="export-png" title="Exporter le graphe en PNG">📸 EXPORT</button>
+                </div>
+            </section>
+            <section class="graph-tools-section">
+                <h4>Calcul analytique</h4>
+                <div class="graph-tools-row">
+                    <button type="button" data-graph-action="shade-area" title="Aire sous la courbe entre deux bornes">∫ AIRE</button>
+                    <button type="button" data-graph-action="analyse" title="Détecter racines et intersections">🔍 ANALYSE</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
     <div class="keyboard-module">
         <div class="system-keys">
-            <button class="key key-sys" onclick="ouvrirModal('catalogModal')" title="Ouvrir le catalogue de symboles" style="color:var(--text-neon); font-weight:800; box-shadow: 0 0 10px rgba(122,162,247,0.2)">Ω CAT.</button>
-            <button class="key key-sys" onclick="window.open('docs.html', '_blank', 'noopener')" title="Ouvrir la documentation complète dans un nouvel onglet">📖 DOC</button>
-            <select class="key key-sys key-sys-select" id="themeSelect" onchange="setTheme(this.value)" title="Changer le thème visuel" aria-label="Sélection du thème">
-                </select>
-            <button class="key key-sys" id="kbdProfileBtn" onclick="cycleKeyboardProfile()" title="Changer le profil clavier physique (cycle rapide). Pour un choix précis, ouvrez 📖 DOC > onglet Clavier.">⌨ KBD</button>
-            <button class="key key-sys" onclick="exportPNG()" title="Exporter le graphe courant en PNG haute résolution">📸 EXP</button>
-            <button class="key key-sys" onclick="shareStateURL()" title="Copier dans le presse-papier une URL contenant l'état actuel (fonctions, variables, thème, vue)">🔗 SHARE</button>
-            <button class="key key-sys" id="analyseBtn" onclick="setAnalyse(!analyseEnabled)" title="Lance le détecteur de racines et intersections">🔍 ANA</button>
-            <button class="key key-sys" id="limModeBtn" onclick="setLimMode(!limModeEnabled)" title="Mode LIM : cliquer pour activer, puis cliquer sur le graphe pour poser une limite">Δ LIM</button>
-            <button class="key key-sys" onclick="effacerLimites()" title="Effacer tous les marqueurs de limites">🗑️ LIM</button>
-            <button class="key key-sys" onclick="resetVue()" title="Centrer le graphe : reset X à [-10,10] puis auto-fit Y">⌂ VUE</button>
-            <button class="key key-sys" onclick="effacerGraphe()" title="Effacer les courbes">🗑️ GRF</button>
             <button class="key key-sys key-angle" id="angleModeBtn" onclick="toggleAngleMode()" title="Basculer Radians/Degrés">RAD</button>
-            <button class="key key-sys key-clear-all" onclick="purgerMemoire()" title="Effacer TOUTE la mémoire">⚡ RAM</button>
+            <button class="key key-sys" data-action="ans" title="Dernier résultat [Ans]">ANS</button>
+            <button class="key key-sys" id="memoryBtn" onclick="QNErase.toggleMemoryPanel()" title="Mémoire — restaurer un effacement">💾 MÉMOIRE</button>
+            <button class="key key-sys key-clear-all" id="eraseBtn" onclick="QNErase.eraseCurrent()" title="Effacer le contenu du mode courant">🗑 EFFACER</button>
         </div>
 
-        <div class="main-grid">
-            <button class="key key-mem" onclick="inserer('f(x)=')" title="Déclarer f(x)=">f(x)=</button>
-            <button class="key key-mem" onclick="inserer('g(x)=')" title="Déclarer g(x)=">g(x)=</button>
-            <button class="key key-mem" onclick="inserer('cX')" title="Insérer coordonnée X capturée">cX</button>
-            <button class="key key-mem" onclick="inserer('cY')" title="Insérer coordonnée Y capturée">cY</button>
-            <button class="key key-clear" onclick="effacerEntree()" title="Effacer la saisie [Échap]">CE</button>
+        <!-- Mini-panneau MÉMOIRE — apparait au clic du bouton 💾 -->
+        <div id="memoryPanel" class="memory-panel" hidden></div>
 
-            <button class="key key-sci" onclick="inserer('asin(')" title="Arc sinus">arcsin</button>
-            <button class="key key-sci" onclick="inserer('acos(')" title="Arc cosinus">arccos</button>
-            <button class="key key-sci" onclick="inserer('atan(')" title="Arc tangente">arctan</button>
-            <button class="key key-sci" onclick="inserer('sinh(')" title="Sinus hyperbolique">sinh</button>
-            <button class="key key-sci" onclick="inserer('cosh(')" title="Cosinus hyperbolique">cosh</button>
-
-            <button class="key key-sci" onclick="inserer('derivative(')" title="Dérivée symbolique">d/dx</button>
-            <button class="key key-sci" onclick="promptShade()" title="Ombrage d'intégrale : remplit l'aire sous la courbe entre deux bornes">∫ a→b</button>
-            <button class="key key-sci" onclick="inserer('log(')" title="Logarithme naturel (ln)">ln</button>
-            <button class="key key-sci" onclick="inserer('abs(')" title="Valeur absolue">|x|</button>
-            <button class="key key-sci" onclick="inserer('!')" title="Factorielle">n!</button>
-
-            <button class="key key-sci" onclick="inserer('sin(')" title="Sinus">sin</button>
-            <button class="key key-sci" onclick="inserer('cos(')" title="Cosinus">cos</button>
-            <button class="key key-sci" onclick="inserer('tan(')" title="Tangente">tan</button>
-            <button class="key key-sci" onclick="inserer('sqrt(')" title="Racine carrée">√</button>
-            <button class="key key-sci" onclick="inserer('^2')" title="Élever au carré">x²</button>
-
-            <button class="key key-sci" onclick="inserer('floor(')" title="Partie entière inférieure (arrondi vers le bas)">floor(x)</button>
-            <button class="key key-sci" onclick="inserer('ceil(')" title="Partie entière supérieure (arrondi vers le haut)">ceil(x)</button>
-            <button class="key key-sci" onclick="inserer('round(')" title="Arrondi à l'entier le plus proche">round</button>
-            <button class="key key-sci" onclick="inserer('mod(')" title="Modulo : mod(a, b) = reste de la division de a par b">mod</button>
-            <button class="key key-sci" onclick="inserer('^')" title="Puissance : x^n">xⁿ</button>
-
-            <button class="key key-sci" onclick="inserer('tanh(')" title="Tangente hyperbolique">tanh</button>
-            <button class="key key-sci" onclick="inserer('exp(')" title="Exponentielle e^x — équivalent à e^x">exp</button>
-            <button class="key key-sci" onclick="inserer('^3')" title="Élever au cube">x³</button>
-            <button class="key key-sci" onclick="inserer('cbrt(')" title="Racine cubique">∛</button>
-            <button class="key key-sci" onclick="inserer('nthRoot(')" title="Racine n-ième : nthRoot(x, n)">ⁿ√x</button>
-
-            <button class="key key-sci" onclick="inserer('pi')" title="Constante π">π</button>
-            <button class="key key-num" onclick="inserer('7')">7</button>
-            <button class="key key-num" onclick="inserer('8')">8</button>
-            <button class="key key-num" onclick="inserer('9')">9</button>
-            <button class="key key-op"  onclick="inserer('/')" title="Division">÷</button>
-
-            <button class="key key-sci" onclick="inserer('e')" title="Constante e">e</button>
-            <button class="key key-num" onclick="inserer('4')">4</button>
-            <button class="key key-num" onclick="inserer('5')">5</button>
-            <button class="key key-num" onclick="inserer('6')">6</button>
-            <button class="key key-op"  onclick="inserer('*')" title="Multiplication">×</button>
-
-            <button class="key key-sci" onclick="inserer('(')">(</button>
-            <button class="key key-num" onclick="inserer('1')">1</button>
-            <button class="key key-num" onclick="inserer('2')">2</button>
-            <button class="key key-num" onclick="inserer('3')">3</button>
-            <button class="key key-op"  onclick="inserer('-')">−</button>
-
-            <button class="key key-sci" onclick="inserer(')')">)</button>
-            <button class="key key-num" onclick="inserer('0')">0</button>
-            <button class="key key-num" onclick="inserer('.')">.</button>
-            <button class="key key-sci key-x" onclick="inserer('x')" title="Variable X">X</button>
-            <button class="key key-op"  onclick="inserer('+')">+</button>
-
-            <button class="key key-sci" onclick="inserer(',')" title="Séparateur d'argument">,</button>
-            <button class="key key-sci" onclick="inserer('=')" title="Assignation">=</button>
-            <button class="key key-act col-3" onclick="executer()" title="Évaluer ou tracer [Entrée]">ÉVALUER / TRACER &nbsp;⏎</button>
+        <!-- Zone défilante pour les fonctions spécialisées (Swipe).
+             Le wrapper sert d'ancre au chevron animé qui signale les
+             touches cachées à droite. -->
+        <div class="scrollable-wrap" id="scrollableWrap">
+            <div class="scrollable-grid" id="scrollableKeyboard"></div>
+            <span class="scrollable-hint" aria-hidden="true">▶</span>
         </div>
+
+        <!-- Grille principale fixe (Chiffres/Opérateurs) -->
+        <div class="main-grid"></div>
     </div>
 </div>
 

@@ -1,0 +1,905 @@
+/**
+ * core/menu.css
+ * Tous les styles ajoutés par-dessus la V5 pour la couche évolution :
+ *   - boutons du brand-header (MENU / THÈME / AIDE)
+ *   - barre de saisie persistante au-dessus du clavier
+ *   - menu de modes (overlay) avec zone CALCULATRICE et cartes spécialisées
+ *   - panneau outils du mode Graphique
+ *   - panneau MATH du mode Scientifique
+ *   - règles de visibilité par mode (canvas / log / legend uniquement en mode-graph)
+ */
+
+/* ===========================================================
+   Brand-header — boutons d'actions à droite (MENU/THÈME/AIDE)
+   =========================================================== */
+.brand-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+/* Boutons d'action du brand-header — version discrète, le logo reste roi.
+   Bordure et fond supprimés ; couleur atténuée par défaut, accent réservé
+   au hover. */
+.brand-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim, #565f89);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Bouton MENU proéminent pour l'étudiant (Call to Action) */
+#brandMenuBtn {
+    background: var(--text-neon, #7aa2f7);
+    color: var(--screen-bg, #07090f);
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    box-shadow: 0 0 15px color-mix(in srgb, var(--text-neon, #7aa2f7) 30%, transparent);
+}
+
+#brandMenuBtn:hover {
+    background: var(--text-main, #c0caf5);
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--text-neon, #7aa2f7) 45%, transparent);
+}
+
+/* Sélecteur de thème — bouton-icône + dropdown custom, très discret */
+.theme-control {
+    position: relative;
+    display: inline-block;
+}
+
+.theme-trigger {
+    padding: 4px 6px;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.theme-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    background: var(--screen-bg, #07090f);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+    min-width: 110px;
+    z-index: 100;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.theme-dropdown[hidden] { display: none; }
+
+.theme-dropdown li { margin: 0; padding: 0; }
+
+.theme-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text-main, #c0caf5);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.theme-dropdown button:hover {
+    background: color-mix(in srgb, var(--text-neon, #7aa2f7) 12%, transparent);
+    color: var(--text-neon, #7aa2f7);
+}
+
+.theme-dropdown button.active {
+    color: var(--text-neon, #7aa2f7);
+    font-weight: 700;
+}
+
+.theme-dropdown button.active::before {
+    content: '✓ ';
+    margin-right: 4px;
+}
+
+/* ===========================================================
+   Menu de modes — overlay sur la zone graphique
+   =========================================================== */
+.mode-menu-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: none;            /* fermé par défaut */
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 10px;
+    background: var(--screen-bg, rgba(7, 9, 15, 0.98));
+    backdrop-filter: blur(2px);
+    overflow: hidden;         /* compact, pas de scroll par défaut */
+    animation: modeMenuIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.mode-menu-overlay.open {
+    display: flex;
+}
+
+@keyframes modeMenuIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.mode-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.mode-card {
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.85));
+    border: 1px solid var(--screen-border, rgba(37, 40, 64, 0.8));
+    border-radius: 12px;
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-main, #c0caf5);
+    text-align: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-card:hover,
+.mode-card:focus-visible {
+    transform: translateY(-4px);
+    border-color: var(--text-neon, #7aa2f7);
+    background: color-mix(in srgb, var(--text-neon, #7aa2f7) 5%, var(--key-num-bg));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(122, 162, 247, 0.1);
+    outline: none;
+}
+
+.mode-card.mode-card-soon {
+    opacity: 0.55;
+}
+
+.mode-card.mode-card-soon::after {
+    content: 'bientôt';
+    font-size: 0.5rem;
+    color: var(--text-warn, orange);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.mode-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.4));
+}
+
+/* Quand l'icône est un SVG inline, il prend la couleur du titre (accent
+   néon) pour être cohérent avec le reste de la carte. */
+.mode-icon-svg {
+    color: var(--text-neon, #7aa2f7);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+}
+
+.mode-icon-svg svg {
+    display: block;
+}
+
+.mode-title {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-neon, #7aa2f7);
+    line-height: 1.15;
+}
+
+.mode-desc {
+    font-size: 0.52rem;
+    color: var(--text-dim, #565f89);
+    line-height: 1.2;
+}
+
+@media (max-width: 360px) {
+    .mode-menu-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===========================================================
+   Zone CALCULATRICE — historique affiché dans le menu
+   =========================================================== */
+.calc-display-block {
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.85));
+    border: 1px solid var(--screen-border, rgba(37, 40, 64, 0.8));
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calc-display-header {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-dim, #565f89);
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.calc-display-history {
+    min-height: 90px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text-main, #c0caf5);
+}
+
+.calc-display-empty {
+    color: var(--text-dim, #565f89);
+    font-style: italic;
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.calc-history-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    border-left: 2px solid var(--text-neon, #7aa2f7);
+    background: rgba(122, 162, 247, 0.05);
+    border-radius: 0 4px 4px 0;
+}
+
+.calc-history-expr {
+    color: var(--text-dim, #565f89);
+    font-size: 0.72rem;
+}
+
+.calc-history-result {
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+.calc-history-result.is-error {
+    color: var(--text-error, #f7768e);
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.mode-menu-divider {
+    font-size: 0.6rem;
+    letter-spacing: 2.5px;
+    color: var(--text-dim, #565f89);
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 4px;
+    border-top: 1px solid var(--screen-border, rgba(37, 40, 64, 0.5));
+    padding-top: 12px;
+}
+
+/* ===========================================================
+   Aperçu graphique de la saisie (rendu KaTeX en temps réel)
+   =========================================================== */
+.latex-preview {
+    min-height: 28px;
+    padding: 6px 14px;
+    margin-top: 6px;
+    background: var(--screen-bg, #07090f);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 8px;
+    color: var(--text-main, #c0caf5);
+    font-size: 1.05rem;
+    line-height: 1.4;
+    text-align: center;
+    overflow-x: auto;
+    transition: opacity 0.15s ease;
+}
+
+.latex-preview:empty {
+    opacity: 0.35;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    min-height: 0;
+}
+
+.latex-preview-pending {
+    color: var(--text-dim, #565f89);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* ===========================================================
+   Barre de saisie persistante — entre zone graphique et clavier
+   =========================================================== */
+.input-bar {
+    position: relative;        /* pour positionner les panneaux qui flottent au-dessus */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--screen-bg, #07090f);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 8px;
+    margin: 8px 0;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.input-bar .prompt-symbol {
+    color: var(--text-neon, #7aa2f7);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.input-bar .input-screen {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main, #c0caf5);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 4px 0;
+}
+
+.input-bar .input-screen::placeholder {
+    color: var(--text-dim, #565f89);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+
+/* Boutons à droite de la barre (Outils ▾ et ↗ Détacher en mode Graphique) */
+.input-bar-btn {
+    background: transparent;
+    border: 1px solid var(--screen-border, #252840);
+    color: var(--text-neon, #7aa2f7);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s ease;
+}
+
+.input-bar-btn:hover:not(:disabled) {
+    background: rgba(122, 162, 247, 0.12);
+    box-shadow: 0 0 6px rgba(122, 162, 247, 0.25);
+}
+
+.input-bar-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.input-bar-btn-graph {
+    display: none;
+}
+
+body.mode-graph .input-bar-btn-graph {
+    display: inline-block;
+}
+
+#graphToolsBtn.is-open {
+    background: var(--text-neon, #7aa2f7);
+    color: var(--screen-bg, #07090f);
+}
+
+/* ===========================================================
+   Panneau Outils — mode Graphique
+   =========================================================== */
+.graph-tools-panel {
+    display: none;
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 100%;
+    margin-bottom: 6px;
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.95));
+    border: 1px solid var(--text-neon, #7aa2f7);
+    border-radius: 8px;
+    padding: 10px 12px;
+    z-index: 70;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.graph-tools-panel.open {
+    display: block;
+    animation: graphToolsIn 0.22s ease-out;
+}
+
+@keyframes graphToolsIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.graph-tools-section + .graph-tools-section {
+    margin-top: 8px;
+}
+
+.graph-tools-section h4 {
+    margin: 0 0 4px 0;
+    font-size: 0.55rem;
+    letter-spacing: 1.5px;
+    color: var(--text-dim, #565f89);
+    text-transform: uppercase;
+    border-left: 2px solid var(--text-neon, #7aa2f7);
+    padding-left: 6px;
+}
+
+.graph-tools-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.graph-tools-row button {
+    flex: 1 1 90px;
+    background: var(--key-sci-bg, rgba(28, 32, 56, 0.85));
+    color: var(--text-main, #c0caf5);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 8px 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.graph-tools-row button:hover {
+    border-color: var(--text-neon, #7aa2f7);
+    background: rgba(122, 162, 247, 0.1);
+    color: var(--text-neon, #7aa2f7);
+}
+
+/* ===========================================================
+   Panneau MATH (mode SCIENTIFIQUE)
+   =========================================================== */
+.scientific-toolbox {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    flex-direction: column;
+    background: var(--screen-bg, #07090f);
+    color: var(--text-main, #c0caf5);
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+}
+
+.scientific-toolbox.open {
+    display: flex;
+}
+
+.toolbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.85));
+    border-bottom: 1px solid var(--screen-border, #252840);
+}
+
+.toolbox-back {
+    background: transparent;
+    border: 1px solid var(--screen-border, #252840);
+    color: var(--text-neon, #7aa2f7);
+    font-family: inherit;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toolbox-back:hover {
+    background: rgba(122, 162, 247, 0.12);
+}
+
+.toolbox-title {
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    color: var(--text-neon, #7aa2f7);
+}
+
+.toolbox-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toolbox-section h4 {
+    margin: 0 0 4px 0;
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    color: var(--text-dim, #565f89);
+    text-transform: uppercase;
+    border-left: 2px solid var(--text-neon, #7aa2f7);
+    padding-left: 6px;
+}
+
+.toolbox-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.toolbox-row button {
+    flex: 1 1 70px;
+    background: var(--key-sci-bg, rgba(28, 32, 56, 0.85));
+    color: var(--text-main, #c0caf5);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 8px 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.toolbox-row button:hover {
+    border-color: var(--text-neon, #7aa2f7);
+    background: rgba(122, 162, 247, 0.1);
+    color: var(--text-neon, #7aa2f7);
+}
+
+.toolbox-formal .toolbox-row button {
+    background: var(--text-neon, #7aa2f7);
+    color: var(--screen-bg, #07090f);
+    border: none;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.toolbox-formal .toolbox-row button:hover {
+    filter: brightness(1.15);
+}
+
+/* ===========================================================
+   Visibilité par mode : canvas / legend / log
+   =========================================================== */
+#mathCanvas,
+.function-legend {
+    display: none !important;
+}
+
+/* Le log (historique) est visible partout sauf mention contraire,
+   pour que l'étudiant voit ses calculs. */
+.log-module {
+    display: block !important;
+}
+
+body.mode-graph #mathCanvas {
+    display: block !important;
+}
+
+body.mode-graph .function-legend {
+    display: flex !important;
+}
+
+/* En mode non-graphique, on donne plus de place à l'historique */
+body:not(.mode-graph) .log-module {
+    flex-grow: 1;
+    border-top: none;
+}
+
+body:not(.mode-graph) .history-log {
+    max-height: none;
+    height: auto;
+}
+
+/* ===========================================================
+   Bouton ≡ MENU dans la rangée system-keys (différentié)
+   =========================================================== */
+#modeMenuBtn {
+    border-color: var(--text-neon, #7aa2f7) !important;
+}
+
+/* ===========================================================
+   Mini-panneau MÉMOIRE (apparaît sous le bouton 💾 MÉMOIRE)
+   =========================================================== */
+.memory-panel {
+    position: fixed;
+    z-index: 80;
+    background: var(--screen-bg, #07090f);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    min-width: 240px;
+    max-width: 320px;
+    padding: 8px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.memory-panel[hidden] { display: none; }
+
+.memory-panel-head {
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    color: var(--text-dim, #565f89);
+    text-transform: uppercase;
+    padding: 4px 6px 8px;
+    border-bottom: 1px solid var(--screen-border, #252840);
+    margin-bottom: 6px;
+}
+
+.memory-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.memory-list li {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.memory-restore {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 4px;
+    color: var(--text-main, #c0caf5);
+    font-family: inherit;
+    font-size: 0.7rem;
+    text-align: left;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.memory-restore:hover {
+    border-color: var(--text-neon, #7aa2f7);
+    color: var(--text-neon, #7aa2f7);
+    background: color-mix(in srgb, var(--text-neon, #7aa2f7) 8%, transparent);
+}
+
+.memory-delete {
+    background: transparent;
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 4px;
+    color: var(--text-dim, #565f89);
+    font-family: inherit;
+    font-size: 0.7rem;
+    padding: 0 8px;
+    cursor: pointer;
+}
+
+.memory-delete:hover {
+    color: var(--text-error, #f7768e);
+    border-color: var(--text-error, #f7768e);
+}
+
+.memory-reset {
+    width: 100%;
+    margin-top: 8px;
+    background: transparent;
+    border: 1px solid var(--text-warn, #e0af68);
+    border-radius: 4px;
+    color: var(--text-warn, #e0af68);
+    font-family: inherit;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 7px 10px;
+    cursor: pointer;
+}
+
+.memory-reset:hover {
+    background: color-mix(in srgb, var(--text-warn, #e0af68) 12%, transparent);
+}
+
+/* ===========================================================
+   Ghost text — prévisualisation grise de la fin probable
+   (autocomplete/04_ghost.js)
+   =========================================================== */
+.screen-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.screen-wrap > #screen {
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    width: 100%;
+}
+
+.autocomplete-ghost {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    white-space: pre;
+    overflow: hidden;
+    color: transparent;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+.autocomplete-ghost .typed   { visibility: hidden; }
+.autocomplete-ghost .hint    { color: color-mix(in srgb, var(--text-dim, #565f89) 70%, transparent); }
+
+/* ===========================================================
+   Auto-complétion — dropdown sous la barre de saisie
+   =========================================================== */
+.autocomplete-dropdown {
+    position: fixed;
+    z-index: 90;
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    background: var(--screen-bg, #07090f);
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    max-height: 240px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace;
+    display: none;
+}
+
+.autocomplete-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: color-mix(in srgb, var(--text-neon, #7aa2f7) 14%, transparent);
+}
+
+.autocomplete-name {
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.autocomplete-desc {
+    color: var(--text-dim, #565f89);
+    font-size: 0.65rem;
+    text-align: right;
+    flex: 1;
+}
+
+/* ===========================================================
+   Rangée de fonctions défilante (Swipe Keyboard)
+   =========================================================== */
+.scrollable-wrap {
+    position: relative;
+}
+
+.scrollable-grid {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 4px 2px 10px 2px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE 10+ */
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    cursor: grab;
+    user-select: none;
+    scroll-behavior: smooth;
+}
+
+.scrollable-grid.dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
+}
+
+.scrollable-grid::-webkit-scrollbar {
+    display: none; /* Safari / Chrome */
+}
+
+.scrollable-grid .key {
+    flex: 0 0 auto;
+    min-width: 65px;
+    min-height: 38px;
+    font-size: 0.7rem;
+    border: 1px solid var(--screen-border, rgba(37, 40, 64, 0.5));
+}
+
+/* Indicateur visuel "il y a plus à droite" — chevron pulsant qui se
+   masque quand l'utilisateur a fait défiler jusqu'au bout. Géré par
+   loader.js (data-end="true" sur .scrollable-wrap). */
+.scrollable-hint {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.95rem;
+    pointer-events: none;
+    opacity: 0.65;
+    animation: swipeHint 1.4s ease-in-out infinite;
+    transition: opacity 0.25s ease;
+}
+
+.scrollable-wrap[data-end="true"] .scrollable-hint {
+    opacity: 0;
+}
+
+@keyframes swipeHint {
+    0%, 100% { transform: translateY(-50%) translateX(0); }
+    50%      { transform: translateY(-50%) translateX(4px); }
+}
+
+/* Transition de thème fluide : le changement de couleur ne s'opère plus
+   d'un seul flash, il glisse sur 0.4s. Donne un sentiment "instrument
+   pro" au lieu d'un toggle CSS brutal. */
+html {
+    transition:
+        background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        color            0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Logo plus aéré, lettres plus espacées — accentue l'identité "instrument" */
+.brand-logo {
+    letter-spacing: 4px !important;
+}
+
+/* Bordure inférieure du brand-header : on l'atténue pour ne pas couper
+   visuellement le bloc supérieur du reste de la calc. */
+.brand-header {
+    border-bottom-color: color-mix(in srgb, var(--screen-border, #252840) 50%, transparent) !important;
+}
+
+/* Touches numériques en font-weight 800 : look plus ferme, type vraie
+   calculatrice physique. (Override soft sur la classe V5 .key-num.) */
+.main-grid .key-num {
+    font-weight: 800;
+}
