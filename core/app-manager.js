@@ -10,15 +10,15 @@ class AppManager {
         this.currentApp = null;
         this.history = [];
 
-        // Libellés humains pour le breadcrumb du header.
+        // Libellés humains pour le fil d'Ariane du header.
         this.appLabels = {
             home: '',
-            calc: 'CALCULUS',
-            graph: 'GRAPHING',
+            calc: 'CALCUL',
+            graph: 'TRACÉ',
             matrix: 'MATRICES',
-            algebra: 'ALGEBRA',
-            proba: 'STATS',
-            help: 'MANUAL'
+            algebra: 'ALGÈBRE',
+            proba: 'STATISTIQUES',
+            help: 'MANUEL'
         };
 
         this.initEventListeners();

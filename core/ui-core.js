@@ -20,7 +20,8 @@ window.QNSession = window.QNSession || {
 
 const UICore = {
     themes: ['cyber', 'light', 'phosphor', 'plasma'],
-    currentThemeIndex: 0,
+    // Index 1 = 'light' : thème clair par défaut, conformément au design produit.
+    currentThemeIndex: 1,
 
     init() {
         console.log("UI Core Initialisé");

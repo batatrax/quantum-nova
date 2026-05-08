@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="cyber">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,17 +53,17 @@
 
         <!-- BARRE D'ACTIONS BASSE (STAY VISIBLE) -->
         <footer class="v6-footer-nav">
-            <button id="btn-home" class="v6-nav-btn">
+            <button id="btn-home" class="v6-nav-btn" aria-label="Retour à l'accueil">
                 <span class="icon">🏠</span>
-                <span>HOME</span>
+                <span>ACCUEIL</span>
             </button>
-            <button id="btn-back" class="v6-nav-btn">
+            <button id="btn-back" class="v6-nav-btn" aria-label="Module précédent">
                 <span class="icon">⬅</span>
-                <span>BACK</span>
+                <span>RETOUR</span>
             </button>
-            <button id="btn-help" class="v6-nav-btn">
+            <button id="btn-help" class="v6-nav-btn" aria-label="Ouvrir le manuel">
                 <span class="icon">❓</span>
-                <span>INFO</span>
+                <span>AIDE</span>
             </button>
         </footer>
     </div>
@@ -74,17 +74,17 @@
     <template id="tpl-home">
         <div class="qn-home-menu">
             <header class="qn-home-header">
-                <h2>SYSTEM OS v6.0</h2>
-                <p>Select application module</p>
+                <h2>SYSTÈME v6.0</h2>
+                <p>Sélectionnez un module</p>
             </header>
             <div class="qn-launcher-grid">
                 <button class="qn-launch-card" data-app="calc">
                     <span class="icon">🔢</span>
-                    <span class="title">Calculus</span>
+                    <span class="title">Calcul</span>
                 </button>
                 <button class="qn-launch-card" data-app="graph">
                     <span class="icon">📈</span>
-                    <span class="title">Graphing</span>
+                    <span class="title">Tracé</span>
                 </button>
                 <button class="qn-launch-card" data-app="matrix">
                     <span class="icon">🔲</span>
@@ -92,17 +92,17 @@
                 </button>
                 <button class="qn-launch-card" data-app="algebra">
                     <span class="icon">∆</span>
-                    <span class="title">Algebra</span>
+                    <span class="title">Algèbre</span>
                 </button>
                 <button class="qn-launch-card" data-app="proba">
                     <span class="icon">🎲</span>
-                    <span class="title">Stats</span>
+                    <span class="title">Statistiques</span>
                 </button>
             </div>
 
             <!-- Exemples rapides -->
             <div class="qn-examples-section" style="margin-top: 30px; border-top: 1px solid var(--v6-border); padding-top: 20px;">
-                <span style="font-size: 0.6rem; color: #444; letter-spacing: 2px; text-transform: uppercase;">Quick Launch Samples</span>
+                <span style="font-size: 0.6rem; color: #444; letter-spacing: 2px; text-transform: uppercase;">Exemples rapides</span>
                 <div id="exampleList" class="qn-example-list" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
                     <!-- Injecté par onboarding.js -->
                 </div>
