@@ -98,9 +98,19 @@ window.MODE_HANDLERS = window.MODE_HANDLERS || {};
             // La page de droite devient automatiquement le mémo du mode graphique.
             showGraphHelpInSidePanel();
 
-            // Force un redessin du canvas si le moteur V5 est chargé.
-            if (typeof dessiner === 'function') {
-                try { dessiner(); } catch (e) { /* moteur peut-être pas prêt */ }
+            // Le canvas vient peut-être d'apparaître (display:none → block via
+            // body.mode-graph). Ses coords internes peuvent être périmées. On
+            // force un resize avant le redessin pour éviter la zone noire en
+            // bas et le glisser partiel.
+            if (typeof window.resizeCanvas === 'function') {
+                requestAnimationFrame(() => {
+                    try { window.resizeCanvas(); } catch (e) { /* moteur pas prêt */ }
+                    if (typeof dessiner === 'function') {
+                        try { dessiner(); } catch (e) {}
+                    }
+                });
+            } else if (typeof dessiner === 'function') {
+                try { dessiner(); } catch (e) {}
             }
 
             // S'assurer que le panneau est fermé en entrant dans le mode
