@@ -141,33 +141,36 @@
 
 .mode-menu-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    /* 4 colonnes compactes : tous les modes (Graphique, Scientifique,
+       Matrices, Statistiques) tiennent sur une seule ligne dans la calc
+       (largeur ≈ 440 px → ≈ 100 px par card, suffisant pour icône +
+       label court). Plus dense, moins de scroll. */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
     width: 100%;
 }
 
 .mode-card {
     background: var(--key-num-bg, rgba(20, 22, 42, 0.85));
     border: 1px solid var(--screen-border, rgba(37, 40, 64, 0.8));
-    border-radius: 12px;
-    padding: 16px 8px;
+    border-radius: 8px;
+    padding: 8px 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     cursor: pointer;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-main, #c0caf5);
     text-align: center;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
 .mode-card:hover,
 .mode-card:focus-visible {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: var(--text-neon, #7aa2f7);
     background: color-mix(in srgb, var(--text-neon, #7aa2f7) 5%, var(--key-num-bg));
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(122, 162, 247, 0.1);
     outline: none;
 }
 
@@ -184,9 +187,8 @@
 }
 
 .mode-icon {
-    font-size: 1.6rem;
+    font-size: 1.15rem;
     line-height: 1;
-    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.4));
 }
 
 /* Quand l'icône est un SVG inline, il prend la couleur du titre (accent
@@ -204,18 +206,18 @@
 }
 
 .mode-title {
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 1px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--text-neon, #7aa2f7);
-    line-height: 1.15;
+    line-height: 1.1;
 }
 
+/* La description longue n'a plus sa place dans une carte compacte ;
+   on la masque, l'icône + le titre + le tooltip natif suffisent. */
 .mode-desc {
-    font-size: 0.68rem;
-    color: var(--text-dim, #565f89);
-    line-height: 1.3;
+    display: none;
 }
 
 @media (max-width: 360px) {

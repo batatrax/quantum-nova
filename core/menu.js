@@ -57,6 +57,9 @@
             card.type = 'button';
             card.className = 'mode-card';
             card.dataset.mode = mode.id;
+            // Tooltip natif : la description (cachée visuellement pour
+            // gagner de la place) reste accessible au survol.
+            if (mode.desc) card.title = mode.desc;
             if (mode.status === 'soon') card.classList.add('mode-card-soon');
 
             const icon = document.createElement('span');
