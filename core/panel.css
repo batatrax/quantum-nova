@@ -18,8 +18,8 @@
 }
 
 .qn-app .workstation {
-    flex: 1 1 460px;
-    min-width: 320px;
+    flex: 0 0 440px;
+    min-width: 440px;
     max-width: 540px;
     height: 100%;
     overflow: hidden;
@@ -27,7 +27,7 @@
 
 .qn-panel {
     flex: 1 1 auto;
-    min-width: 380px;
+    min-width: 0;
     height: 100vh;
     background: var(--screen-bg, #07090f);
     color: var(--text-main, #c0caf5);
@@ -252,10 +252,11 @@ body.qn-panel-collapsed .qn-app .workstation {
 }
 
 /* ===========================================================
-   Responsive : sur écran étroit (< 800 px de large), la calc
-   prend toute la largeur et le panneau bascule en bas en drawer.
+   Responsive : sur écran trop étroit pour deux colonnes lisibles,
+   la calc prend toute la largeur et le panneau passe en bas.
+   Seuil 940 px : 440 (calc) + 380 (panel mini) + marges.
    =========================================================== */
-@media (max-width: 800px) {
+@media (max-width: 940px) {
     .qn-app {
         flex-direction: column;
         height: auto;
@@ -263,6 +264,8 @@ body.qn-panel-collapsed .qn-app .workstation {
     }
     .qn-app .workstation {
         max-width: none;
+        min-width: 0;
+        width: 100%;
         height: 100vh;
         flex: 0 0 auto;
     }
