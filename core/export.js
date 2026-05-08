@@ -55,14 +55,13 @@
     }
 
     function open() {
-        if (!chan) {
-            // Pas de panel connecté — on tente l'impression native (plan B)
-            window.print();
-            return;
-        }
         const data = buildSnapshot();
-        try { chan.postMessage({ type: 'show-export', data }); }
-        catch (e) { /* silencieux */ }
+        const msg = { type: 'show-export', data };
+        let delivered = false;
+        if (chan) { try { chan.postMessage(msg); delivered = true; } catch (e) {} }
+        try { window.dispatchEvent(new CustomEvent('qn-bus', { detail: msg })); delivered = true; } catch (e) {}
+        // Fallback ultime si aucun canal n'a accepté le message
+        if (!delivered) window.print();
     }
 
     window.QNExport = { open, buildSnapshot };

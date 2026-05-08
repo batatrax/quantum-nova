@@ -263,12 +263,13 @@
      */
     function setupThemeBroadcast() {
         let chan = null;
-        try { chan = new BroadcastChannel('quantum-nova'); } catch (e) { return; }
+        try { chan = new BroadcastChannel('quantum-nova'); } catch (e) { /* fallback CustomEvent uniquement */ }
 
         const emit = () => {
             const theme = document.documentElement.getAttribute('data-theme') || 'light';
-            try { chan.postMessage({ type: 'theme-change', theme }); }
-            catch (e) { /* ignoré */ }
+            const msg = { type: 'theme-change', theme };
+            if (chan) { try { chan.postMessage(msg); } catch (e) {} }
+            try { window.dispatchEvent(new CustomEvent('qn-bus', { detail: msg })); } catch (e) {}
         };
 
         emit();   // émission initiale pour synchro au démarrage du panel

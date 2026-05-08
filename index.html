@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="core/menu.css">
     <link rel="stylesheet" href="core/help.css">
+    <link rel="stylesheet" href="core/panel.css">
     <link rel="stylesheet" href="modes/matrix/matrix.css">
 
     <!-- KaTeX : rendu graphique des formules mathématiques (LaTeX → SVG/HTML).
@@ -52,11 +53,25 @@
     <script src="modes/stats/02_keyb_stats.js" defer></script>
     <script src="core/menu.js" defer></script>
     <script src="core/loader.js" defer></script>
-    <!-- Bouton AIDE de la calc : affiche un sommaire et émet des messages
-         BroadcastChannel vers panel.html (qui héberge le contenu réel).
-         Les fichiers help/examples ne sont plus chargés ici — ils vivent
-         dans panel.html, allégeant le bundle de la calc. -->
     <script src="core/help.js" defer></script>
+
+    <!-- Édition tout-en-un : panneau d'aide intégré à droite (avant cette
+         version, le panneau vivait dans panel.html embarqué en iframe
+         séparée). On charge donc ici toutes les sections d'aide + le module
+         matrix-panel + le router de panneau. -->
+    <script src="docs/sections/start.js" defer></script>
+    <script src="modes/calc/03_doc_calc.js" defer></script>
+    <script src="modes/graph/03_doc_graph.js" defer></script>
+    <script src="modes/graph/04_examples_graph.js" defer></script>
+    <script src="modes/scientific/03_doc_scientific.js" defer></script>
+    <script src="modes/scientific/04_examples_scientific.js" defer></script>
+    <script src="modes/matrix/03_doc_matrix.js" defer></script>
+    <script src="modes/matrix/04_examples_matrix.js" defer></script>
+    <script src="modes/stats/03_doc_stats.js" defer></script>
+    <script src="modes/stats/04_examples_stats.js" defer></script>
+    <script src="docs/sections/shortcuts.js" defer></script>
+    <script src="modes/matrix/05_panel_matrix.js" defer></script>
+    <script src="core/panel.js" defer></script>
 
     <style>
         body.widget-mode, body {
@@ -86,6 +101,7 @@
 
 <body class="widget-mode">
 
+<div class="qn-app">
 <div class="workstation">
 
     <div class="brand-header">
@@ -284,6 +300,19 @@
         <!-- Grille principale fixe (Chiffres/Opérateurs) -->
         <div class="main-grid"></div>
     </div>
+</div>
+
+<aside class="qn-panel" id="qnPanel" aria-label="Panneau d'aide et d'édition matrices">
+    <header class="qn-panel-header">
+        <h1 id="qnPanelTitle">Premiers pas</h1>
+        <button type="button" class="qn-panel-close" id="qnPanelClose"
+                title="Fermer le panneau (réouvrir avec 📖 AIDE)">×</button>
+    </header>
+    <article class="panel-content" id="panelContent">
+        <p class="qn-panel-loading">Chargement…</p>
+    </article>
+</aside>
+
 </div>
 
 <div class="modal-overlay" id="catalogModal" role="dialog" aria-modal="true">

@@ -25,7 +25,12 @@
     let chan = null;
     try { chan = new BroadcastChannel('quantum-nova'); } catch (e) { chan = null; }
 
-    function send(msg) { if (chan) chan.postMessage(msg); }
+    function send(msg) {
+        if (chan) { try { chan.postMessage(msg); } catch (e) {} }
+        // Fallback intra-fenêtre : essentiel pour le mode tout-en-un (un
+        // seul iframe contenant calc + panneau intégré).
+        try { window.dispatchEvent(new CustomEvent('qn-bus', { detail: msg })); } catch (e) {}
+    }
 
     // ===========================================================
     // RÉCAP dans canvasContainer
@@ -96,18 +101,20 @@
     // ===========================================================
     // ÉCOUTE de l'état envoyé par le panneau
     // ===========================================================
-    if (chan) {
-        chan.addEventListener('message', ev => {
-            const msg = ev.data || {};
-            if (msg.type === 'matrix-state' && msg.state) {
-                Object.assign(STATE, msg.state);
-                if (document.body.classList.contains('mode-matrix')) {
-                    renderRecap();
-                    updateKeyboardState();
-                }
+    function onIncomingMessage(msg) {
+        if (!msg) return;
+        if (msg.type === 'matrix-state' && msg.state) {
+            Object.assign(STATE, msg.state);
+            if (document.body.classList.contains('mode-matrix')) {
+                renderRecap();
+                updateKeyboardState();
             }
-        });
+        }
     }
+    if (chan) {
+        chan.addEventListener('message', ev => onIncomingMessage(ev.data || {}));
+    }
+    window.addEventListener('qn-bus', ev => onIncomingMessage(ev.detail || {}));
 
     // ===========================================================
     // HANDLERS du clavier (broadcast vers le panneau)

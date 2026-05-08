@@ -1,0 +1,275 @@
+/**
+ * core/panel.css
+ * Layout tout-en-un : la calc à gauche + le panneau d'aide intégré à droite.
+ * Pensé pour s'embarquer comme UN SEUL iframe dans Google Sites (pas besoin
+ * de deux blocs côte-à-côte qui se passeraient des messages).
+ *
+ * Le panneau est masquable via le bouton 📖 AIDE du brand-header. Sur
+ * écran étroit, il bascule en drawer en bas.
+ */
+
+.qn-app {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.qn-app .workstation {
+    flex: 1 1 460px;
+    min-width: 320px;
+    max-width: 540px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.qn-panel {
+    flex: 1 1 auto;
+    min-width: 380px;
+    height: 100vh;
+    background: var(--screen-bg, #07090f);
+    color: var(--text-main, #c0caf5);
+    border-left: 1px solid var(--screen-border, #252840);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: flex 0.3s ease, min-width 0.3s ease;
+}
+
+body.qn-panel-collapsed .qn-panel {
+    flex: 0 0 0;
+    min-width: 0;
+    border-left-width: 0;
+}
+
+body.qn-panel-collapsed .qn-app .workstation {
+    max-width: none;
+    flex: 1 1 100%;
+}
+
+.qn-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--screen-border, #252840);
+    flex: 0 0 auto;
+}
+
+.qn-panel-header h1 {
+    margin: 0;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+}
+
+.qn-panel-close {
+    background: transparent;
+    color: var(--text-dim, #565f89);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.qn-panel-close:hover {
+    color: var(--text-main, #c0caf5);
+    border-color: var(--screen-border, #252840);
+}
+
+.qn-panel .panel-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 24px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+
+/* Reprise des styles intérieurs du panel (auparavant dans panel.html) */
+.qn-panel .panel-content h2 {
+    color: var(--text-neon, #7aa2f7);
+    letter-spacing: 1.5px;
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+    border-bottom: 1px solid var(--screen-border, #252840);
+    padding-bottom: 8px;
+}
+
+.qn-panel .panel-content h3 {
+    color: var(--text-main, #c0caf5);
+    margin-top: 22px;
+    font-size: 0.95rem;
+    letter-spacing: 0.8px;
+}
+
+.qn-panel .panel-content p {
+    color: var(--text-main, #c0caf5);
+    opacity: 0.92;
+    margin: 8px 0;
+}
+
+.qn-panel .panel-content code {
+    background: rgba(122, 162, 247, 0.12);
+    color: var(--text-neon, #7aa2f7);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+}
+
+.qn-panel .panel-content .help-todo {
+    background: rgba(224, 175, 104, 0.08);
+    border-left: 3px solid var(--text-warn, #e0af68);
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 16px 0;
+    color: var(--text-warn, #e0af68);
+    font-size: 0.78rem;
+    font-style: italic;
+}
+
+/* Catalogue visuel du mode graphique */
+.qn-panel .graph-ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+    margin: 14px 0 22px;
+}
+.qn-panel .graph-ref-card {
+    border: 1px solid var(--screen-border, #252840);
+    background: rgba(122, 162, 247, 0.07);
+    border-radius: 8px;
+    padding: 11px 12px;
+}
+.qn-panel .graph-ref-card strong {
+    display: block;
+    color: var(--text-main, #c0caf5);
+    font-size: 0.78rem;
+    letter-spacing: 0.8px;
+    margin-bottom: 7px;
+}
+.qn-panel .graph-ref-card code { display: inline-block; margin-bottom: 7px; }
+.qn-panel .graph-ref-card span {
+    display: block;
+    color: var(--text-dim, #565f89);
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+.qn-panel .graph-function-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px 14px;
+    margin: 12px 0 22px;
+}
+.qn-panel .graph-function-list section,
+.qn-panel .graph-tool-list,
+.qn-panel .graph-example-stack {
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.5));
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.qn-panel .graph-function-list h4 {
+    margin: 0 0 8px;
+    color: var(--text-neon, #7aa2f7);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+}
+
+/* Vue Export */
+.qn-panel .export-section {
+    margin: 18px 0;
+    padding: 12px 14px;
+    background: var(--key-num-bg, rgba(20, 22, 42, 0.5));
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 6px;
+}
+.qn-panel .export-legend {
+    font-size: 0.6rem;
+    letter-spacing: 1.5px;
+    color: var(--text-dim, #565f89);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.qn-panel .export-option {
+    display: block;
+    padding: 6px 4px;
+    color: var(--text-main, #c0caf5);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.qn-panel .export-option input { margin-right: 6px; cursor: pointer; }
+.qn-panel .export-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin: 16px 0;
+}
+.qn-panel .export-download {
+    background: var(--text-neon, #7aa2f7);
+    color: var(--screen-bg, #07090f);
+    border: none;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    cursor: pointer;
+}
+.qn-panel .export-preview {
+    background: var(--screen-bg, #07090f);
+    border: 1px dashed var(--screen-border, #252840);
+    border-radius: 6px;
+    padding: 16px;
+    min-height: 120px;
+    max-height: 360px;
+    overflow: auto;
+}
+.qn-panel .export-preview-text {
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-main, #c0caf5);
+    white-space: pre-wrap;
+}
+.qn-panel .export-preview img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--screen-border, #252840);
+    border-radius: 4px;
+}
+
+/* ===========================================================
+   Responsive : sur écran étroit (< 800 px de large), la calc
+   prend toute la largeur et le panneau bascule en bas en drawer.
+   =========================================================== */
+@media (max-width: 800px) {
+    .qn-app {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    .qn-app .workstation {
+        max-width: none;
+        height: 100vh;
+        flex: 0 0 auto;
+    }
+    .qn-panel {
+        height: auto;
+        min-height: 0;
+        border-left: none;
+        border-top: 1px solid var(--screen-border, #252840);
+    }
+}

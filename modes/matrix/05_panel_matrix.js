@@ -238,8 +238,7 @@
     }
 
     function broadcastState() {
-        if (!chan) return;
-        chan.postMessage({
+        const payload = {
             type: 'matrix-state',
             state: {
                 step: state.step,
@@ -248,7 +247,10 @@
                 rowsB: state.rowsB, colsB: state.colsB,
                 augmented: state.augmented
             }
-        });
+        };
+        if (chan) { try { chan.postMessage(payload); } catch (e) {} }
+        // Fallback intra-fenêtre (mode tout-en-un)
+        try { window.dispatchEvent(new CustomEvent('qn-bus', { detail: payload })); } catch (e) {}
     }
 
     function preserveValues(target) {
@@ -758,6 +760,8 @@
     if (chan) {
         chan.addEventListener('message', ev => onMessage(ev.data || {}));
     }
+    // Fallback intra-fenêtre : essentiel pour le mode tout-en-un.
+    window.addEventListener('qn-bus', ev => onMessage(ev.detail || {}));
 
     // Restaure l'état depuis localStorage (si dispo) avant le premier
     // matrix-show. La calc enverra le show au switch de mode et la vue

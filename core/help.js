@@ -43,10 +43,9 @@
     try { chan = new BroadcastChannel('quantum-nova'); } catch (e) { chan = null; }
 
     function emitShowHelp(sectionId) {
-        if (chan) {
-            try { chan.postMessage({ type: 'show-help', section: sectionId }); }
-            catch (e) { /* ignoré */ }
-        }
+        const msg = { type: 'show-help', section: sectionId };
+        if (chan) { try { chan.postMessage(msg); } catch (e) {} }
+        try { window.dispatchEvent(new CustomEvent('qn-bus', { detail: msg })); } catch (e) {}
     }
 
     /* ----- Construction du panneau-sommaire ----- */
